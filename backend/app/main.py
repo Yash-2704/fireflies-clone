@@ -8,7 +8,7 @@ from sqlalchemy import select
 
 from app.db import MEDIA_DIR, Base, SessionLocal, engine
 from app.models import User
-from app.routers import action_items, annotations, meetings, search
+from app.routers import action_items, analytics, annotations, meetings, search
 from app.seed import seed
 
 Base.metadata.create_all(engine)
@@ -28,7 +28,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-for r in (meetings.router, action_items.router, annotations.router, search.router):
+for r in (meetings.router, action_items.router, annotations.router, analytics.router, search.router):
     app.include_router(r, prefix="/api")
 
 

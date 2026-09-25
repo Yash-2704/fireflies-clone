@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 from app.db import MEDIA_DIR, Base, SessionLocal, engine
-from app.models import Meeting, User
+from app.models import Meeting, TopicTracker, User
 from app.seed_data import MEETINGS
 from app.services.ai import normalize_notes
 from app.services.meetings import apply_notes, load_transcript, participants_by_name, tags_by_name
@@ -35,6 +35,11 @@ def seed() -> None:
             db.add(meeting)
             load_transcript(db, meeting, parse_transcript(data["transcript"]))
             apply_notes(db, meeting, normalize_notes(data["notes"]), "seed")
+        # Default topic trackers so Topic Insights has something to show out of the box.
+        for name, keywords in [("Pricing & budget", "pricing,price,budget,cost"),
+                               ("Security", "security,soc 2,encryption,sso"),
+                               ("Launch", "launch,release,staging")]:
+            db.add(TopicTracker(owner_id=user.id, name=name, keywords=keywords))
         db.commit()
     print(f"Seeded {len(MEETINGS)} meetings")
 

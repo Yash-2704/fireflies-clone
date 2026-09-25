@@ -117,3 +117,24 @@ def test_workspace_ask_and_notifications_offline():
     feed = c.get("/api/notifications").json()
     assert feed[0]["kind"] in {"notes_ready", "tasks_due"}
     assert any(n["kind"] == "tasks_due" for n in feed)  # seed assigns tasks to the default user
+
+
+def test_analytics_and_topics():
+    week = c.get("/api/analytics/team").json()  # default: last 7 days
+    month = c.get("/api/analytics/team", params={"date_from": "2000-01-01T00:00:00"}).json()
+    assert 0 < week["current"]["conversations"] < month["current"]["conversations"] == 6
+    cur = month["current"]
+    assert cur["questions"] > 0 and cur["wpm"] > 0 and cur["duration_sec"] > 0
+    assert cur["talk_pct"] is not None and 0 < cur["talk_pct"] < 100  # the default user speaks in seeds
+    assert {s["name"] for s in cur["speakers"]} >= {"Olivia Chen", "Yash Aggarwal"}
+    assert sum(d["meetings"] for d in month["daily"]) == 6
+    assert c.get("/api/analytics/team", params={"tag": "hiring", "date_from": "2000-01-01T00:00:00"}).json()["current"]["conversations"] == 1
+    assert c.get("/api/analytics/team", params={"date_from": "2030-01-01T00:00:00", "date_to": "2029-01-01T00:00:00"}).status_code == 422
+
+    t = c.post("/api/topics", json={"name": "Hubspot", "keywords": ["HubSpot", " hubspot ", ""]}).json()
+    assert t["keywords"] == ["hubspot"]
+    insights = c.get("/api/analytics/topics", params={"date_from": "2000-01-01T00:00:00"}).json()
+    hub = next(x for x in insights if x["id"] == t["id"])
+    assert hub["conversations"] == 1 and hub["mentions"] >= 3
+    assert c.delete(f"/api/topics/{t['id']}").status_code == 204
+    assert c.post("/api/topics", json={"name": "x", "keywords": [" "]}).status_code == 422

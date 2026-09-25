@@ -199,3 +199,14 @@ class AskResponse(BaseModel):
 
 class GlobalAskRequest(AskRequest):
     tag: str | None = None
+
+
+class TopicIn(BaseModel):
+    name: str = Field(min_length=1, max_length=80)
+    keywords: list[str] = Field(min_length=1, max_length=20)
+
+
+class TopicOut(BaseModel):
+    id: int
+    name: str
+    keywords: list[str]

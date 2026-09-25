@@ -209,3 +209,15 @@ class Bookmark(Base):
     kind: Mapped[str] = mapped_column(String(20))
     at_sec: Mapped[float] = mapped_column(Float)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+
+
+class TopicTracker(Base):
+    """A named set of keywords tracked across meetings (Fireflies' Topic Trackers)."""
+    __tablename__ = "topic_trackers"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    owner_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    name: Mapped[str] = mapped_column(String(80))
+    # Comma-separated, lower-cased. A tracker has a handful of keywords that are always read
+    # together, so a child table would add joins without enabling any query we need.
+    keywords: Mapped[str] = mapped_column(Text)

@@ -77,9 +77,17 @@ fallback, and the UI labels them "Auto-generated (AI offline)".
 - **Global search (⌘K)** — titles and transcript lines, jumping straight to the moment.
 - **Tasks page** — every action item across meetings, with open/completed filters.
 - **Export** — notes as Markdown, transcript as TXT (re-importable), or print/save as PDF.
+- **Analytics** — *Team Insights* for Today / last 7 / last 30 days / a custom range, filterable by
+  channel and participants, each metric with ▲/▼ vs the previous period of equal length:
+  conversations, time in conversations, questions asked, filler words, monologues (≥30s uninterrupted),
+  longest monologue, your talk-to-listen ratio, words per minute, silence (gaps ≥1s), a per-day chart
+  (hover tooltips + table view), a speakers table, and CSV export. *Topic Insights* tracks keyword
+  sets (topic trackers) across meetings — conversations and mentions per keyword; clicking a keyword
+  opens search. Meeting pages show each tracker's mentions and filter the transcript to them.
+  Everything is computed from transcript segments at request time, so renames and edits are reflected immediately.
 - **Dark theme by default** (like Fireflies), light theme in Settings. Toasts for every action.
 - Placeholders ("Coming soon"): live capture bot, integrations, team, analytics, AI skills,
-  voice agents, and recording settings.
+  voice agents, the Sales (CRM) analytics tab, and recording settings.
 
 ## Architecture
 
@@ -134,6 +142,7 @@ users 1─N meetings N─M participants   (meeting_participants)
 | comments | segment_id, body, created_at | A discussion note pinned to a transcript line (deleted with the line/meeting). |
 | soundbites | meeting_id, title, start_sec, end_sec | A named clip; the player plays just that range. |
 | bookmarks | meeting_id, kind, at_sec | One-click markers: important / action / positive / negative. |
+| topic_trackers | owner_id, name, keywords | Keyword sets tracked across meetings (comma-separated; always read together). |
 
 Every child table uses `ON DELETE CASCADE` (with SQLite foreign keys enabled), so deleting a
 meeting removes its whole tree. Talk-time and words per minute are **derived** from segments when
@@ -160,6 +169,9 @@ a meeting is read, not stored, so they can never go stale after a speaker is ren
 | POST / DELETE | `/api/meetings/{id}/soundbites`, `/api/soundbites/{id}` | Create / delete a clip |
 | POST / DELETE | `/api/meetings/{id}/bookmarks`, `/api/bookmarks/{id}` | Add / remove a bookmark |
 | PATCH | `/api/segments/{id}` | Edit a transcript line's text |
+| GET | `/api/analytics/team?date_from=&date_to=&participant_id=&tag=` | Team Insights for a period + previous period + per-day series + speakers |
+| GET | `/api/analytics/topics?…same filters` | Topic Insights: conversations and mentions per tracker keyword |
+| GET / POST / DELETE | `/api/topics`, `/api/topics/{id}` | Manage topic trackers |
 | GET | `/api/participants`, `/api/tags`, `/api/me` | Filter options, current user |
 
 ## Deployment (Railway)

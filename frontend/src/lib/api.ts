@@ -41,6 +41,25 @@ export type Comment = { id: number; segment_id: number; body: string; created_at
 export type Soundbite = { id: number; title: string; start_sec: number; end_sec: number; created_at: string };
 export type BookmarkKind = "important" | "action" | "positive" | "negative";
 export type Bookmark = { id: number; kind: BookmarkKind; at_sec: number; created_at: string };
+export type Topic = { id: number; name: string; keywords: string[] };
+export type TeamMetrics = {
+  conversations: number; duration_sec: number; questions: number; fillers: number; monologues: number;
+  longest_monologue_sec: number; talk_pct: number | null; wpm: number; silence_sec: number;
+};
+export type SpeakerInsight = {
+  name: string; meetings: number; talk_sec: number; wpm: number; questions: number; longest_monologue_sec: number;
+};
+export type TeamInsights = {
+  from: string; to: string;
+  current: TeamMetrics & { speakers: SpeakerInsight[] };
+  previous: TeamMetrics;
+  daily: { date: string; meetings: number; minutes: number }[];
+};
+export type TopicInsight = {
+  id: number; name: string; conversations: number; mentions: number;
+  keywords: { keyword: string; conversations: number; mentions: number }[];
+};
+export type AnalyticsFilters = { date_from?: string; date_to?: string; participant_id?: number[]; tag?: string };
 export type Notification = { kind: "notes_ready" | "tasks_due"; title: string; body: string; href: string; at: string };
 
 export type MeetingDetail = MeetingListItem & {
@@ -147,6 +166,12 @@ export const api = {
   askWorkspace: (question: string, history: { role: string; content: string }[], tag?: string) =>
     request<{ answer: string; source: string }>("/ask", json("POST", { question, history, tag })),
   notifications: () => request<Notification[]>("/notifications"),
+
+  teamInsights: (f: AnalyticsFilters) => request<TeamInsights>(`/analytics/team${query(f)}`),
+  topicInsights: (f: AnalyticsFilters) => request<TopicInsight[]>(`/analytics/topics${query(f)}`),
+  topics: () => request<Topic[]>("/topics"),
+  createTopic: (name: string, keywords: string[]) => request<Topic>("/topics", json("POST", { name, keywords })),
+  deleteTopic: (id: number) => request<void>(`/topics/${id}`, { method: "DELETE" }),
 
   search: (q: string) => request<SearchHit[]>(`/search?q=${encodeURIComponent(q)}`),
   participants: () => request<Participant[]>("/participants"),

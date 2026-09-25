@@ -1,6 +1,10 @@
 "use client";
 
-import { MeetingDetail, Segment } from "@/lib/api";
+import { Hash, Plus } from "lucide-react";
+import { useEffect, useState } from "react";
+
+import { TopicsModal } from "@/components/analytics/TopicsModal";
+import { api, MeetingDetail, Segment, Topic } from "@/lib/api";
 import { Avatar } from "@/components/ui/Avatar";
 import { TranscriptFilter } from "@/components/meeting/TranscriptPanel";
 import { fmtTime } from "@/lib/format";
@@ -21,6 +25,14 @@ export function SmartSearchPanel({ meeting, filter, onFilter }: {
   filter: TranscriptFilter;
   onFilter: (f: TranscriptFilter) => void;
 }) {
+  const [topics, setTopics] = useState<Topic[]>([]);
+  const [managing, setManaging] = useState(false);
+  const loadTopics = () => { api.topics().then(setTopics).catch(() => {}); };
+  useEffect(loadTopics, []);
+  // Same whole-word, case-insensitive matching as the backend's Topic Insights.
+  const mentions = (text: string, kw: string) =>
+    (text.match(new RegExp(`(?<!\\w)${kw.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?!\\w)`, "gi")) ?? []).length;
+
   const taskStarts = new Set(meeting.action_items.flatMap((a) => (a.start_sec == null ? [] : [a.start_sec])));
 
   const pick = (label: string, segs: Segment[]) =>
@@ -43,6 +55,28 @@ export function SmartSearchPanel({ meeting, filter, onFilter }: {
               </button>
             );
           })}
+        </div>
+      </section>
+
+      <section>
+        <h3 className="mb-2 flex items-center text-[11px] font-semibold uppercase tracking-wider text-faint">
+          <span className="flex-1">Topic Trackers</span>
+          <button onClick={() => setManaging(true)} aria-label="Manage topic trackers" className="rounded p-0.5 hover:bg-hover hover:text-text"><Plus size={13} /></button>
+        </h3>
+        <div className="space-y-1.5">
+          {topics.map((t) => {
+            const segs = meeting.segments.filter((s) => t.keywords.some((k) => mentions(s.text, k)));
+            const count = meeting.segments.reduce((n, s) => n + t.keywords.reduce((m, k) => m + mentions(s.text, k), 0), 0);
+            const label = `Topic: ${t.name}`;
+            return (
+              <button key={t.id} disabled={!count} onClick={() => pick(label, segs)} title={t.keywords.join(", ")}
+                className={`flex w-full items-center gap-2 rounded-md border px-2.5 py-2 text-left text-[13px] disabled:opacity-40 ${filter?.label === label ? "border-primary bg-primary-soft" : "border-line bg-card hover:bg-hover"}`}>
+                <Hash size={12} className="text-primary" /><span className="flex-1 truncate">{t.name}</span>
+                <span className="text-xs text-muted">{count}</span>
+              </button>
+            );
+          })}
+          {!topics.length && <p className="text-xs text-muted">No topic trackers yet — add keywords to track.</p>}
         </div>
       </section>
 
@@ -72,6 +106,7 @@ export function SmartSearchPanel({ meeting, filter, onFilter }: {
           })}
         </div>
       </section>
+      {managing && <TopicsModal onClose={() => setManaging(false)} onChange={loadTopics} />}
     </div>
   );
 }

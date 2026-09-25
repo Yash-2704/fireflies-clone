@@ -9,9 +9,9 @@ import { fmtTime } from "@/lib/format";
 import { Highlight } from "@/components/ui/Highlight";
 
 /** ⌘K global search across meeting titles and transcripts. */
-export function SearchModal({ onClose }: { onClose: () => void }) {
+export function SearchModal({ onClose, initialQuery = "" }: { onClose: () => void; initialQuery?: string }) {
   const router = useRouter();
-  const [q, setQ] = useState("");
+  const [q, setQ] = useState(initialQuery);
   const [results, setHits] = useState<SearchHit[] | null>(null);
   const tooShort = q.trim().length < 2;
   const hits = tooShort ? null : results;
