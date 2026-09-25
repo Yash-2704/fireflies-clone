@@ -11,23 +11,19 @@ import { TopBar } from "@/components/shell/TopBar";
 import { Avatar } from "@/components/ui/Avatar";
 import { useToast } from "@/components/ui/Toast";
 import { AnalyticsFilters, api, Participant, Tag, TeamInsights, TopicInsight } from "@/lib/api";
+import { dayEndUtc, dayStartUtc, localDay } from "@/lib/dates";
 import { fmtTime } from "@/lib/format";
 
 type Range = "today" | "7d" | "30d" | "custom";
 
-// Backend dates are naive local times, so send local "YYYY-MM-DDTHH:MM:SS" (no timezone).
-const localIso = (d: Date) =>
-  new Date(d.getTime() - d.getTimezoneOffset() * 60_000).toISOString().slice(0, 19);
-
+// Ranges are local calendar days ("Today" = since your midnight), sent as UTC instants.
 function rangeDates(range: Range, custom: { from: string; to: string }) {
+  if (range === "custom") return { date_from: dayStartUtc(custom.from), date_to: dayEndUtc(custom.to) };
   const now = new Date();
-  if (range === "custom") {
-    return { date_from: `${custom.from}T00:00:00`, date_to: `${custom.to}T23:59:59` };
-  }
   const start = new Date(now);
   if (range === "today") start.setHours(0, 0, 0, 0);
   else start.setDate(now.getDate() - (range === "7d" ? 7 : 30));
-  return { date_from: localIso(start), date_to: localIso(now) };
+  return { date_from: start.toISOString(), date_to: now.toISOString() };
 }
 
 const mins = (sec: number) => `${Math.floor(sec / 60)}:${String(Math.round(sec % 60)).padStart(2, "0")}`;
@@ -38,7 +34,7 @@ export default function AnalyticsPage() {
   const [tab, setTab] = useState<"team" | "topics">("team");
   const [range, setRange] = useState<Range>("7d");
   const [custom, setCustom] = useState(() => {
-    const today = localIso(new Date()).slice(0, 10);
+    const today = localDay(new Date());
     return { from: today, to: today };
   });
   const [people, setPeople] = useState<number[]>([]);
@@ -165,7 +161,7 @@ export default function AnalyticsPage() {
                 </StatCard>
               </div>
 
-              {team && <DailyChart from={team.from} to={team.to} daily={team.daily} />}
+              {team && <DailyChart from={team.from} to={team.to} meetings={team.meetings} />}
 
               <div className="overflow-x-auto rounded-xl border border-line bg-panel">
                 <h3 className="px-4 pt-4 text-[13px] text-muted">Speakers</h3>

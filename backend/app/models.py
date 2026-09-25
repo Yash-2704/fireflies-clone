@@ -9,8 +9,17 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db import Base
 
 
+# Convention: every datetime is stored as naive UTC. The API marks them as UTC on the way out
+# (schemas.UTCDateTime) and converts incoming aware datetimes with to_utc().
 def utcnow() -> datetime:
     return datetime.now(timezone.utc).replace(tzinfo=None)
+
+
+def to_utc(dt: datetime | None) -> datetime | None:
+    """Aware -> naive UTC; naive values are assumed to already be UTC."""
+    if dt is None or dt.tzinfo is None:
+        return dt
+    return dt.astimezone(timezone.utc).replace(tzinfo=None)
 
 
 meeting_participants = Table(

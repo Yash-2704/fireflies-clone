@@ -133,7 +133,7 @@ def test_analytics_and_topics():
     assert cur["questions"] > 0 and cur["wpm"] > 0 and cur["duration_sec"] > 0
     assert cur["talk_pct"] is not None and 0 < cur["talk_pct"] < 100  # the default user speaks in seeds
     assert {s["name"] for s in cur["speakers"]} >= {"Olivia Chen", "Yash Aggarwal"}
-    assert sum(d["meetings"] for d in month["daily"]) == 6
+    assert len(month["meetings"]) == 6 and month["from"].endswith("+00:00")
     assert c.get("/api/analytics/team", params={"tag": "hiring", "date_from": "2000-01-01T00:00:00"}).json()["current"]["conversations"] == 1
     assert c.get("/api/analytics/team", params={"date_from": "2030-01-01T00:00:00", "date_to": "2029-01-01T00:00:00"}).status_code == 422
 
@@ -144,3 +144,15 @@ def test_analytics_and_topics():
     assert hub["conversations"] == 1 and hub["mentions"] >= 3
     assert c.delete(f"/api/topics/{t['id']}").status_code == 204
     assert c.post("/api/topics", json={"name": "x", "keywords": [" "]}).status_code == 422
+
+
+def test_timezones_round_trip():
+    m = c.get("/api/meetings").json()["meetings"][0]
+    assert m["date"].endswith("+00:00")  # stored UTC, labelled as such for the browser
+    # The same instant expressed in IST must select the same meetings as in UTC.
+    utc = c.get("/api/meetings", params={"date_from": "2026-01-01T00:00:00+00:00"}).json()["total"]
+    ist = c.get("/api/meetings", params={"date_from": "2026-01-01T05:30:00+05:30"}).json()["total"]
+    assert utc == ist
+    created = c.post("/api/meetings", data={"transcript_text": "A: hi", "title": "tz",
+                                             "date": "2026-09-26T00:30:00+05:30"}).json()
+    assert created["date"].startswith("2026-09-25T19:00:00")  # 00:30 IST == 19:00 UTC the day before

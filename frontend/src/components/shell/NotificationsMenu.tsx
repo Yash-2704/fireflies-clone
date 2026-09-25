@@ -31,13 +31,13 @@ export function NotificationsMenu() {
     return () => document.removeEventListener("mousedown", close);
   }, [open]);
 
-  const isUnread = (n: Notification) => n.at > seenAt;
+  const isUnread = (n: Notification) => !seenAt || Date.parse(n.at) > Date.parse(seenAt);
   const unread = items.filter(isUnread).length;
 
   function toggle() {
     if (open) {
       // Closing marks everything as read.
-      const now = new Date().toISOString().slice(0, 19);
+      const now = new Date().toISOString();
       try { localStorage.setItem(SEEN_KEY, now); } catch {}
       setSeenAt(now);
     }

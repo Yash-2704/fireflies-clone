@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session, selectinload
 from app.db import get_db
 
 from app.models import (
-    ActionItem, Meeting, Participant, Segment, Speaker, Tag, User, meeting_participants, meeting_tags,
+    utcnow, ActionItem, Meeting, Participant, Segment, Speaker, Tag, User, meeting_participants, meeting_tags,
 )
 from app.schemas import (
     AskResponse, GlobalAskRequest, Notification, ParticipantOut, SearchHit, TagOut, UserOut,
@@ -100,7 +100,7 @@ def ask_across_meetings(body: GlobalAskRequest, db: Session = Depends(get_db),
     if not blocks:
         return AskResponse(answer="There are no meetings to search yet.", source="heuristic")
     answer, source = ai.answer_question(
-        f"Today is {datetime.now():%a %b %d %Y}. The user is {user.name}.\n\n" + "\n\n".join(blocks),
+        f"Today is {utcnow():%a %b %d %Y} (UTC). The user is {user.name}.\n\n" + "\n\n".join(blocks),
         body.question, [m.model_dump() for m in body.history], prompt=ai.WORKSPACE_PROMPT)
     return AskResponse(answer=answer, source=source)
 

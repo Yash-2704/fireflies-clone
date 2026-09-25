@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session, selectinload
 from starlette.concurrency import run_in_threadpool
 
 from app.db import MEDIA_DIR, get_db
-from app.models import Meeting, Participant, Speaker, Tag, User, meeting_participants, meeting_tags
+from app.models import to_utc, utcnow, Meeting, Participant, Speaker, Tag, User, meeting_participants, meeting_tags
 from app.schemas import (
     AskRequest, AskResponse, MeetingDetail, MeetingList, MeetingUpdate, SpeakerUpdate,
 )
@@ -54,9 +54,9 @@ def list_meetings(
         stmt = stmt.where(Meeting.id.in_(
             select(meeting_tags.c.meeting_id).join(Tag).where(Tag.name == tag.lower())))
     if date_from:
-        stmt = stmt.where(Meeting.date >= date_from)
+        stmt = stmt.where(Meeting.date >= to_utc(date_from))
     if date_to:
-        stmt = stmt.where(Meeting.date <= date_to)
+        stmt = stmt.where(Meeting.date <= to_utc(date_to))
     if min_duration is not None:
         stmt = stmt.where(Meeting.duration_sec >= min_duration * 60)
     if max_duration is not None:
@@ -144,7 +144,7 @@ async def create_meeting(
             raise HTTPException(422, str(e))
 
     fallback_title = filename.rsplit(".", 1)[0] if filename else "Untitled meeting"
-    meeting = Meeting(title=title.strip() or fallback_title, date=date or datetime.now(), organizer=user,
+    meeting = Meeting(title=title.strip() or fallback_title, date=to_utc(date) or utcnow(), organizer=user,
                       media_path=media_name, media_type=media_type)
     meeting.participants = participants_by_name(db, participants.split(","))
     meeting.tags = tags_by_name(db, tags.split(","))
@@ -174,7 +174,7 @@ def update_meeting(
     if body.title is not None:
         meeting.title = body.title.strip()
     if body.date is not None:
-        meeting.date = body.date
+        meeting.date = to_utc(body.date)
     if body.participants is not None:
         meeting.participants = participants_by_name(db, body.participants)
     if body.tags is not None:

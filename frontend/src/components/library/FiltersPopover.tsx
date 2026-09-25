@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { Avatar } from "@/components/ui/Avatar";
 import { api, MeetingFilters, Participant, Tag } from "@/lib/api";
+import { dayEndUtc, dayStartUtc, isoToLocalDay } from "@/lib/dates";
 
 const SECTIONS = [
   { id: "participants", label: "Participants", icon: Users },
@@ -83,12 +84,12 @@ export function FiltersPopover({ value, onChange }: { value: MeetingFilters; onC
             {section === "date" && (
               <div className="space-y-3 text-xs text-muted">
                 <label className="block">From
-                  <input type="date" className="input mt-1" value={value.date_from?.slice(0, 10) ?? ""}
-                    onChange={(e) => onChange({ ...value, date_from: e.target.value ? `${e.target.value}T00:00:00` : undefined })} />
+                  <input type="date" className="input mt-1" value={isoToLocalDay(value.date_from)}
+                    onChange={(e) => onChange({ ...value, date_from: e.target.value ? dayStartUtc(e.target.value) : undefined })} />
                 </label>
                 <label className="block">To
-                  <input type="date" className="input mt-1" value={value.date_to?.slice(0, 10) ?? ""}
-                    onChange={(e) => onChange({ ...value, date_to: e.target.value ? `${e.target.value}T23:59:59` : undefined })} />
+                  <input type="date" className="input mt-1" value={isoToLocalDay(value.date_to)}
+                    onChange={(e) => onChange({ ...value, date_to: e.target.value ? dayEndUtc(e.target.value) : undefined })} />
                 </label>
               </div>
             )}

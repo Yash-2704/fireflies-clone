@@ -1,4 +1,11 @@
-from datetime import datetime
+from datetime import datetime, timezone
+from typing import Annotated
+
+from pydantic import PlainSerializer
+
+# Stored datetimes are naive UTC; mark them as UTC in JSON so clients convert to their local time.
+UTCDateTime = Annotated[datetime, PlainSerializer(
+    lambda d: (d if d.tzinfo else d.replace(tzinfo=timezone.utc)).isoformat(), return_type=str)]
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -27,7 +34,7 @@ class TagOut(ORM):
 class MeetingListItem(ORM):
     id: int
     title: str
-    date: datetime
+    date: UTCDateTime
     duration_sec: int
     organizer: UserOut
     participants: list[ParticipantOut]
@@ -63,7 +70,7 @@ class SegmentOut(ORM):
 class SummaryOut(ORM):
     overview: str
     source: str
-    generated_at: datetime
+    generated_at: UTCDateTime
 
 
 class ChapterOut(ORM):
@@ -80,14 +87,14 @@ class ActionItemOut(ORM):
     assignee: ParticipantOut | None
     is_completed: bool
     start_sec: float | None
-    created_at: datetime
+    created_at: UTCDateTime
 
 
 class CommentOut(ORM):
     id: int
     segment_id: int
     body: str
-    created_at: datetime
+    created_at: UTCDateTime
 
 
 class SoundbiteOut(ORM):
@@ -95,14 +102,14 @@ class SoundbiteOut(ORM):
     title: str
     start_sec: float
     end_sec: float
-    created_at: datetime
+    created_at: UTCDateTime
 
 
 class BookmarkOut(ORM):
     id: int
     kind: str
     at_sec: float
-    created_at: datetime
+    created_at: UTCDateTime
 
 
 class MeetingDetail(MeetingListItem):
@@ -141,7 +148,7 @@ class Notification(BaseModel):
     title: str
     body: str
     href: str
-    at: datetime
+    at: UTCDateTime
 
 
 
@@ -175,7 +182,7 @@ class TaskOut(ActionItemOut):
 class SearchHit(BaseModel):
     meeting_id: int
     meeting_title: str
-    meeting_date: datetime
+    meeting_date: UTCDateTime
     kind: str  # "title" | "transcript"
     snippet: str
     start_sec: float | None = None

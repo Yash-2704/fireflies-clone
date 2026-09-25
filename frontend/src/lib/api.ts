@@ -53,7 +53,7 @@ export type TeamInsights = {
   from: string; to: string;
   current: TeamMetrics & { speakers: SpeakerInsight[] };
   previous: TeamMetrics;
-  daily: { date: string; meetings: number; minutes: number }[];
+  meetings: { date: string; minutes: number }[];
 };
 export type TopicInsight = {
   id: number; name: string; conversations: number; mentions: number;

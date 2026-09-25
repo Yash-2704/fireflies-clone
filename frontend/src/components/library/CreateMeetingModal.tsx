@@ -7,6 +7,7 @@ import { useState } from "react";
 import { Modal } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
 import { api } from "@/lib/api";
+import { localInputToUtc } from "@/lib/dates";
 
 const EXAMPLE = `[00:00] Alice: Let's review the launch checklist.
 [00:12] Bob: Docs are done. I'll send the release notes by Friday.`;
@@ -21,6 +22,9 @@ export function CreateMeetingModal({ onClose }: { onClose: () => void }) {
     e.preventDefault();
     const form = new FormData(e.currentTarget);
     if (!String(form.get("transcript_text") ?? "").trim()) return toast.error("Paste a transcript first");
+    const date = String(form.get("date") ?? "");
+    if (date) form.set("date", localInputToUtc(date)); // the input is local time; the API expects UTC
+    else form.delete("date");
     setBusy(true);
     try {
       const meeting = await api.createMeeting(form);

@@ -94,7 +94,7 @@ export function CommentsPanel({ meeting, player, annotations, userName }: {
               <div className="mb-1.5 flex items-center gap-2 text-xs">
                 <Avatar name={userName} size={18} />
                 <span className="font-medium">{userName}</span>
-                <span className="text-faint">{new Date(c.created_at + "Z").toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</span>
+                <span className="text-faint">{new Date(c.created_at).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</span>
                 <span className="ml-auto"><DeleteButton onClick={() => annotations.deleteComment(c.id)} label="Delete comment" /></span>
               </div>
               <p className="text-[13px]">{c.body}</p>

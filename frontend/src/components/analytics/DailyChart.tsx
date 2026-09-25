@@ -2,23 +2,32 @@
 
 import { useState } from "react";
 
+import { localDay } from "@/lib/dates";
+
 type Day = { date: string; meetings: number; minutes: number };
 
 const H = 150, PAD_L = 28, PAD_B = 22, PAD_T = 8, W = 640;
 
-/** Single-series bar chart: minutes of conversation per day across the selected range. */
-export function DailyChart({ from, to, daily }: { from: string; to: string; daily: Day[] }) {
+/** Single-series bar chart: minutes of conversation per (local) day across the selected range. */
+export function DailyChart({ from, to, meetings }: { from: string; to: string; meetings: { date: string; minutes: number }[] }) {
   const [hover, setHover] = useState<number | null>(null);
   const [asTable, setAsTable] = useState(false);
 
   // Fill every day in the range so gaps read as zero, not as missing axis ticks.
-  const byDate = new Map(daily.map((d) => [d.date, d]));
+  // Which day a meeting falls on depends on the viewer's timezone, so bucket here, not on the server.
+  const byDate = new Map<string, Day>();
+  for (const m of meetings) {
+    const key = localDay(new Date(m.date));
+    const day = byDate.get(key) ?? { date: key, meetings: 0, minutes: 0 };
+    day.meetings += 1;
+    day.minutes = Math.round((day.minutes + m.minutes) * 10) / 10;
+    byDate.set(key, day);
+  }
   const days: Day[] = [];
-  const start = new Date(from.slice(0, 10) + "T00:00:00");
-  const end = new Date(to.slice(0, 10) + "T00:00:00");
+  const start = new Date(localDay(new Date(from)) + "T00:00:00");
+  const end = new Date(localDay(new Date(to)) + "T00:00:00");
   for (let d = new Date(start); d <= end && days.length < 92; d.setDate(d.getDate() + 1)) {
-    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-    days.push(byDate.get(key) ?? { date: key, meetings: 0, minutes: 0 });
+    days.push(byDate.get(localDay(d)) ?? { date: localDay(d), meetings: 0, minutes: 0 });
   }
   const max = Math.max(1, ...days.map((d) => d.minutes));
   const niceMax = Math.ceil(max / 5) * 5;

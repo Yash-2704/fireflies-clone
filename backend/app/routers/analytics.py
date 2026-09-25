@@ -1,11 +1,11 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
 from app.db import get_db
-from app.models import Meeting, Tag, TopicTracker, User, meeting_participants, meeting_tags
+from app.models import Meeting, Tag, TopicTracker, User, meeting_participants, meeting_tags, to_utc, utcnow
 from app.schemas import TopicIn, TopicOut
 from app.services.analytics import keyword_hits, team_metrics
 from app.services.meetings import current_user
@@ -36,9 +36,13 @@ def _as_rows(meetings: list[Meeting]) -> list[dict]:
     return rows
 
 
+def _iso(dt: datetime) -> str:
+    return dt.replace(tzinfo=timezone.utc).isoformat()
+
+
 def _window(date_from: datetime | None, date_to: datetime | None) -> tuple[datetime, datetime]:
-    end = date_to or datetime.now()
-    start = date_from or end - timedelta(days=7)
+    end = to_utc(date_to) or utcnow()
+    start = to_utc(date_from) or end - timedelta(days=7)
     if start >= end:
         raise HTTPException(422, "date_from must be before date_to")
     return start, end
@@ -54,18 +58,14 @@ def team_insights(
     start, end = _window(date_from, date_to)
     current = _meetings(db, user, start, end, participant_id, tag)
     previous = _meetings(db, user, start - (end - start), start, participant_id, tag)
-    by_day: dict[str, list[float]] = {}
-    for m in current:
-        day = by_day.setdefault(m.date.date().isoformat(), [0, 0])
-        day[0] += 1
-        day[1] += m.duration_sec / 60
     prev = team_metrics(_as_rows(previous), user.name)
     prev.pop("speakers")
     return {
-        "from": start, "to": end,
+        "from": _iso(start), "to": _iso(end),
         "current": team_metrics(_as_rows(current), user.name),
         "previous": prev,
-        "daily": [{"date": d, "meetings": v[0], "minutes": round(v[1], 1)} for d, v in sorted(by_day.items())],
+        # Per meeting, not per day: "which day" depends on the viewer's timezone, so the client buckets.
+        "meetings": [{"date": _iso(m.date), "minutes": round(m.duration_sec / 60, 1)} for m in current],
     }
 
 
