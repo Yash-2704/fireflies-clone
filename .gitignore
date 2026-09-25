@@ -1,0 +1,10 @@
+.env
+*.db
+__pycache__/
+.venv/
+node_modules/
+.next/
+.claude/
+ASSIGNMENT_ANALYSIS.md
+.DS_Store
+.pytest_cache/

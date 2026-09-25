@@ -1,0 +1,98 @@
+@import "tailwindcss";
+
+/* Fireflies is dark-first; light theme is opt-in from Settings → Appearance. */
+:root {
+  --bg: #141416;
+  --panel: #19191c;
+  --card: #212124;
+  --hover: #2a2a2e;
+  --line: #2c2c31;
+  --text: #e9e9ec;
+  --muted: #9b9ba4;
+  --faint: #6c6c75;
+  --primary: #6f4cff;
+  --primary-hover: #5f3df0;
+  --primary-soft: rgba(111, 76, 255, 0.16);
+  --link: #8e9bff;
+  --mark: rgba(255, 196, 0, 0.35);
+  color-scheme: dark;
+}
+
+:root[data-theme="light"] {
+  --bg: #f6f6f8;
+  --panel: #ffffff;
+  --card: #f1f1f4;
+  --hover: #e9e9ee;
+  --line: #e3e3e8;
+  --text: #1c1c21;
+  --muted: #62626d;
+  --faint: #9696a0;
+  --primary-soft: rgba(111, 76, 255, 0.1);
+  --link: #4f46e5;
+  --mark: rgba(255, 196, 0, 0.45);
+  color-scheme: light;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-panel: var(--panel);
+  --color-card: var(--card);
+  --color-hover: var(--hover);
+  --color-line: var(--line);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-soft: var(--primary-soft);
+  --color-link: var(--link);
+  --font-sans: var(--font-inter);
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+}
+
+mark {
+  background: var(--mark);
+  color: inherit;
+  border-radius: 2px;
+}
+
+mark.current {
+  background: #ffb800;
+  color: #111;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+
+@utility btn {
+  @apply inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[13px] font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+}
+@utility btn-primary {
+  @apply btn bg-primary text-white hover:bg-primary-hover;
+}
+@utility btn-ghost {
+  @apply btn border border-line text-text hover:bg-hover;
+}
+@utility input {
+  @apply w-full rounded-md border border-line bg-card px-3 py-2 text-[13px] text-text outline-none placeholder:text-faint focus:border-primary;
+}
+@utility chip {
+  @apply inline-flex items-center gap-1 rounded-md border border-line bg-card px-2 py-1 text-xs text-muted;
+}
+
+@media print {
+  html, body, main, section { height: auto !important; overflow: visible !important; display: block !important; }
+  :root { --bg: #fff; --panel: #fff; --card: #f3f3f3; --text: #111; --muted: #444; --link: #333; }
+}
