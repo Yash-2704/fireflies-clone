@@ -61,7 +61,7 @@ fallback, and the UI labels them "Auto-generated (AI offline)".
 - **Sample meetings have real audio** — generated once with Groq Orpheus TTS (a consistent voice per
   speaker) by `backend/scripts/make_seed_audio.py`, which also rebuilt the seed timestamps from the
   real clip lengths so transcript and audio stay in sync.
-- **CRUD** — create a meeting by uploading a recording or a transcript file (.txt, .vtt, .srt, .json), or pasting a transcript; edit
+- **CRUD** — create a meeting two ways: **Upload** (just pick a recording or a .txt/.vtt/.srt/.json transcript — title comes from the file name) or **Capture → Paste a transcript** (a form with title, transcript, participants, date, tags); edit
   title/participants/tags; delete; add, edit inline, reassign, complete and delete action items;
   rename speakers ("Speaker 1" → a real name, linked as a participant); regenerate notes.
 - **AskFred** — chat about a meeting (Groq), with clickable timestamp citations, copy and 👍/👎 on answers,
@@ -87,7 +87,7 @@ fallback, and the UI labels them "Auto-generated (AI offline)".
   Everything is computed from transcript segments at request time, so renames and edits are reflected immediately.
 - **Dark theme by default** (like Fireflies), light theme in Settings. Toasts for every action.
 - Placeholders ("Coming soon"): live capture bot, integrations, team, analytics, AI skills,
-  voice agents, the Sales (CRM) analytics tab, and recording settings.
+  voice agents, and recording settings.
 
 ## Architecture
 

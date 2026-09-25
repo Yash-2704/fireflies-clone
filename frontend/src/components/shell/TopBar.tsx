@@ -5,7 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
-import { NewMeetingModal } from "@/components/library/NewMeetingModal";
+import { CreateMeetingModal } from "@/components/library/CreateMeetingModal";
+import { UploadModal } from "@/components/library/UploadModal";
 import { NotificationsMenu } from "@/components/shell/NotificationsMenu";
 import { SearchModal } from "@/components/shell/SearchModal";
 import { useToast } from "@/components/ui/Toast";
@@ -71,7 +72,8 @@ export function TopBar({ title }: { title: React.ReactNode }) {
         </div>
       </div>
       {searching && <SearchModal onClose={() => setSearching(false)} />}
-      {creating && <NewMeetingModal initialMode={creating} onClose={() => setCreating(null)} />}
+      {creating === "upload" && <UploadModal onClose={() => setCreating(null)} />}
+      {creating === "paste" && <CreateMeetingModal onClose={() => setCreating(null)} />}
     </header>
   );
 }

@@ -6,7 +6,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { EditMeetingModal } from "@/components/library/EditMeetingModal";
 import { FiltersPopover } from "@/components/library/FiltersPopover";
 import { MeetingRow } from "@/components/library/MeetingRow";
-import { NewMeetingModal } from "@/components/library/NewMeetingModal";
+import { UploadModal } from "@/components/library/UploadModal";
 import { TopBar } from "@/components/shell/TopBar";
 import { WorkspaceAskFred } from "@/components/shell/WorkspaceAskFred";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
@@ -107,7 +107,7 @@ export default function MeetingsPage() {
                   <p className="mt-1 text-[13px] text-muted">
                     {filtered ? "Try removing a filter." : "Upload or paste a transcript and it'll show up right here."}
                   </p>
-                  {!filtered && <button onClick={() => setCreating(true)} className="btn-primary mx-auto mt-5">+ Add meeting</button>}
+                  {!filtered && <button onClick={() => setCreating(true)} className="btn-primary mx-auto mt-5">Upload a recording</button>}
                 </div>
               )}
               {groups.map(([label, items]) => (
@@ -127,7 +127,7 @@ export default function MeetingsPage() {
         <WorkspaceAskFred userName={user?.name ?? ""} tag={filters.tag} />
       </div>
 
-      {creating && <NewMeetingModal onClose={() => setCreating(false)} />}
+      {creating && <UploadModal onClose={() => setCreating(false)} />}
       {editing && <EditMeetingModal meeting={editing} onClose={() => setEditing(null)} onSaved={load} />}
       {deleting && (
         <ConfirmModal title="Delete meeting?" onClose={() => setDeleting(null)} onConfirm={() => remove(deleting)}

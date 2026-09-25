@@ -1,6 +1,6 @@
 "use client";
 
-import { Download, Filter, Hash, Plug, Settings2 } from "lucide-react";
+import { Download, Filter, Hash, Settings2 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { DailyChart } from "@/components/analytics/DailyChart";
@@ -35,7 +35,7 @@ const hrs = (sec: number) => `${Math.floor(sec / 3600)}:${String(Math.round((sec
 
 export default function AnalyticsPage() {
   const toast = useToast();
-  const [tab, setTab] = useState<"team" | "topics" | "sales">("team");
+  const [tab, setTab] = useState<"team" | "topics">("team");
   const [range, setRange] = useState<Range>("7d");
   const [custom, setCustom] = useState(() => {
     const today = localIso(new Date()).slice(0, 10);
@@ -88,7 +88,7 @@ export default function AnalyticsPage() {
       <TopBar title="Analytics" />
       <div className="flex-1 overflow-y-auto">
         <div className="flex justify-center gap-6 border-b border-line">
-          {([["sales", "Sales"], ["team", "Team Insights"], ["topics", "Topic Insights"]] as const).map(([id, label]) => (
+          {([["team", "Team Insights"], ["topics", "Topic Insights"]] as const).map(([id, label]) => (
             <button key={id} onClick={() => setTab(id)}
               className={`-mb-px border-b-2 py-3 text-[13px] ${tab === id ? "border-primary text-primary" : "border-transparent text-muted hover:text-text"}`}>
               {label}
@@ -97,28 +97,26 @@ export default function AnalyticsPage() {
         </div>
 
         <div className="mx-auto max-w-6xl px-6 py-5">
-          {tab !== "sales" && (
-            <div className="mb-4 flex flex-wrap items-center justify-end gap-2">
-              {tab === "team" && <button onClick={exportCsv} disabled={!team} className="btn-ghost"><Download size={14} /> Export</button>}
-              {tab === "topics" && <button onClick={() => setManaging(true)} className="btn-ghost"><Settings2 size={14} /> Manage topics</button>}
-              <AnalyticsFilterMenu people={people} setPeople={setPeople} tag={tag} setTag={setTag} />
-              <select value={range} onChange={(e) => setRange(e.target.value as Range)} aria-label="Date range"
-                className="input w-auto py-1.5">
-                <option value="today">Today</option>
-                <option value="7d">Last 7 days</option>
-                <option value="30d">Last 30 days</option>
-                <option value="custom">Custom date range</option>
-              </select>
-              {range === "custom" && (
-                <>
-                  <input type="date" value={custom.from} max={custom.to} aria-label="From"
-                    onChange={(e) => setCustom({ ...custom, from: e.target.value })} className="input w-auto py-1.5" />
-                  <input type="date" value={custom.to} min={custom.from} aria-label="To"
-                    onChange={(e) => setCustom({ ...custom, to: e.target.value })} className="input w-auto py-1.5" />
-                </>
-              )}
-            </div>
-          )}
+          <div className="mb-4 flex flex-wrap items-center justify-end gap-2">
+            {tab === "team" && <button onClick={exportCsv} disabled={!team} className="btn-ghost"><Download size={14} /> Export</button>}
+            {tab === "topics" && <button onClick={() => setManaging(true)} className="btn-ghost"><Settings2 size={14} /> Manage topics</button>}
+            <AnalyticsFilterMenu people={people} setPeople={setPeople} tag={tag} setTag={setTag} />
+            <select value={range} onChange={(e) => setRange(e.target.value as Range)} aria-label="Date range"
+              className="input w-auto py-1.5">
+              <option value="today">Today</option>
+              <option value="7d">Last 7 days</option>
+              <option value="30d">Last 30 days</option>
+              <option value="custom">Custom date range</option>
+            </select>
+            {range === "custom" && (
+              <>
+                <input type="date" value={custom.from} max={custom.to} aria-label="From"
+                  onChange={(e) => setCustom({ ...custom, from: e.target.value })} className="input w-auto py-1.5" />
+                <input type="date" value={custom.to} min={custom.from} aria-label="To"
+                  onChange={(e) => setCustom({ ...custom, to: e.target.value })} className="input w-auto py-1.5" />
+              </>
+            )}
+          </div>
 
           {tab === "team" && (!c || !p ? <Skeleton /> : (
             <div className="space-y-4">
@@ -238,17 +236,6 @@ export default function AnalyticsPage() {
             </>
           ))}
 
-          {tab === "sales" && (
-            <div className="py-24 text-center">
-              <Plug size={26} className="mx-auto mb-3 text-primary" />
-              <p className="text-lg font-semibold">Stay on top of every deal with AI insights</p>
-              <p className="mt-1 text-[13px] text-muted">Connect your CRM to get notified about stalled deals, follow-ups and risks.</p>
-              <div className="mt-5 flex justify-center gap-2">
-                <button onClick={() => toast.success("HubSpot integration is coming soon")} className="btn-ghost">Connect HubSpot</button>
-                <button onClick={() => toast.success("Salesforce integration is coming soon")} className="btn-ghost">Connect Salesforce</button>
-              </div>
-            </div>
-          )}
         </div>
       </div>
       {managing && <TopicsModal onClose={() => setManaging(false)} onChange={load} />}

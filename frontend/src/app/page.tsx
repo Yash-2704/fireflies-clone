@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-import { NewMeetingModal } from "@/components/library/NewMeetingModal";
+import { UploadModal } from "@/components/library/UploadModal";
 import { TopBar } from "@/components/shell/TopBar";
 import { WorkspaceAskFred } from "@/components/shell/WorkspaceAskFred";
 import { Avatar } from "@/components/ui/Avatar";
@@ -131,7 +131,7 @@ export default function HomePage() {
       </div>
       <WorkspaceAskFred userName={user?.name ?? ""} />
       </div>
-      {creating && <NewMeetingModal onClose={() => setCreating(false)} />}
+      {creating && <UploadModal onClose={() => setCreating(false)} />}
     </>
   );
 }
