@@ -9,3 +9,4 @@ ASSIGNMENT_ANALYSIS.md
 .DS_Store
 .pytest_cache/
 backend/scripts/.tts_cache/
+backend/data/
