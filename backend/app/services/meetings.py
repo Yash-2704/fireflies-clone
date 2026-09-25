@@ -28,6 +28,8 @@ def get_meeting(db: Session, meeting_id: int, user: User) -> Meeting:
             selectinload(Meeting.speakers), selectinload(Meeting.segments),
             selectinload(Meeting.summary), selectinload(Meeting.chapters),
             selectinload(Meeting.action_items).selectinload(ActionItem.assignee),
+            selectinload(Meeting.soundbites), selectinload(Meeting.bookmarks),
+            selectinload(Meeting.comments),
         )
     )
     if not meeting:
@@ -140,4 +142,5 @@ def to_detail(m: Meeting) -> MeetingDetail:
     return MeetingDetail(
         **base, speakers=speakers, segments=m.segments, summary=m.summary,
         chapters=m.chapters, action_items=m.action_items,
+        comments=m.comments, soundbites=m.soundbites, bookmarks=m.bookmarks,
     )

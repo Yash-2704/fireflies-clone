@@ -86,3 +86,34 @@ def test_search_and_ask_offline():
     assert hits and hits[0]["kind"] == "transcript" and hits[0]["start_sec"] is not None
     r = c.post("/api/meetings/2/ask", json={"question": "what about hubspot?"}).json()
     assert r["source"] == "heuristic" and "HubSpot" in r["answer"]
+
+
+def test_annotations_lifecycle():
+    m = c.get("/api/meetings/1").json()
+    seg = m["segments"][3]
+    comment = c.post("/api/meetings/1/comments", json={"segment_id": seg["id"], "body": "Good point"}).json()
+    other_seg = c.get("/api/meetings/2").json()["segments"][0]["id"]
+    assert c.post("/api/meetings/1/comments", json={"segment_id": other_seg, "body": "x"}).status_code == 422
+    clip = c.post("/api/meetings/1/soundbites", json={"title": "Pricing", "start_sec": 10, "end_sec": 20}).json()
+    assert c.post("/api/meetings/1/soundbites", json={"title": "bad", "start_sec": 20, "end_sec": 10}).status_code == 422
+    mark = c.post("/api/meetings/1/bookmarks", json={"kind": "action", "at_sec": 12}).json()
+    assert c.post("/api/meetings/1/bookmarks", json={"kind": "nope", "at_sec": 1}).status_code == 422
+    m = c.get("/api/meetings/1").json()
+    assert [x["id"] for x in m["comments"]] == [comment["id"]]
+    assert m["soundbites"][0]["title"] == "Pricing" and m["bookmarks"][0]["kind"] == "action"
+    edited = c.patch(f"/api/segments/{seg['id']}", json={"text": "  Fixed   text "}).json()
+    assert edited["text"] == "Fixed text"
+    for path in (f"/api/comments/{comment['id']}", f"/api/soundbites/{clip['id']}", f"/api/bookmarks/{mark['id']}"):
+        assert c.delete(path).status_code == 204
+        assert c.delete(path).status_code == 404
+    c.post("/api/meetings/1/comments", json={"segment_id": seg["id"], "body": "cascade me"})
+    c.delete("/api/meetings/1")  # deleting the meeting removes its annotations too
+    assert c.delete(f"/api/comments/{comment['id'] + 1}").status_code == 404
+
+
+def test_workspace_ask_and_notifications_offline():
+    r = c.post("/api/ask", json={"question": "anything about hubspot?"}).json()
+    assert r["source"] == "heuristic" and "HubSpot" in r["answer"]
+    feed = c.get("/api/notifications").json()
+    assert feed[0]["kind"] in {"notes_ready", "tasks_due"}
+    assert any(n["kind"] == "tasks_due" for n in feed)  # seed assigns tasks to the default user

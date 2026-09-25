@@ -64,7 +64,16 @@ fallback, and the UI labels them "Auto-generated (AI offline)".
 - **CRUD** — create a meeting by uploading a recording or a transcript file (.txt, .vtt, .srt, .json), or pasting a transcript; edit
   title/participants/tags; delete; add, edit inline, reassign, complete and delete action items;
   rename speakers ("Speaker 1" → a real name, linked as a participant); regenerate notes.
-- **AskFred** — chat about a meeting (Groq), with clickable timestamp citations.
+- **AskFred** — chat about a meeting (Groq), with clickable timestamp citations, copy and 👍/👎 on answers,
+  and quick-ask chips. **Across meetings** too: on Home and in the library (scoped to the selected
+  channel), answering from recent meetings' summaries and action items, with links to cited meetings.
+- **Soundbites, comments and bookmarks** — select transcript text to get a toolbar (Create soundbite ·
+  Comment · Bookmark · Copy). Left mini-rail panels list soundbites (plays just that clip), comments
+  (quoting their line) and typed bookmarks (Important / Action item / Positive / Negative, filterable).
+  The player bar has one-click ☆ ☑ 👍 👎 bookmarks and timeline ticks.
+- **Transcript tools** — edit a line (fix Whisper mistakes), copy a link to a moment (`?t=`), rename speakers.
+- **Shell** — profile menu (theme toggle), notifications built from real events (notes ready, your open
+  action items) with unread state, and a Capture menu (upload, paste, schedule, live).
 - **Global search (⌘K)** — titles and transcript lines, jumping straight to the moment.
 - **Tasks page** — every action item across meetings, with open/completed filters.
 - **Export** — notes as Markdown, transcript as TXT (re-importable), or print/save as PDF.
@@ -107,6 +116,8 @@ users 1─N meetings N─M participants   (meeting_participants)
           meetings 1─1 summaries
           meetings 1─N chapters
           meetings 1─N action_items ─N:1 participants (assignee, nullable)
+          meetings 1─N soundbites, bookmarks
+          segments 1─N comments
 ```
 
 | Table | Key columns | Why |
@@ -120,6 +131,9 @@ users 1─N meetings N─M participants   (meeting_participants)
 | chapters | meeting_id, position, title, summary, start_sec | Outline entries that jump to where each topic starts. |
 | action_items | meeting_id, text, assignee_id?, is_completed, start_sec? | Tasks. `start_sec` = where the task was said (null if added manually). |
 | tags / meeting_tags | name | Labels and channels for filtering. |
+| comments | segment_id, body, created_at | A discussion note pinned to a transcript line (deleted with the line/meeting). |
+| soundbites | meeting_id, title, start_sec, end_sec | A named clip; the player plays just that range. |
+| bookmarks | meeting_id, kind, at_sec | One-click markers: important / action / positive / negative. |
 
 Every child table uses `ON DELETE CASCADE` (with SQLite foreign keys enabled), so deleting a
 meeting removes its whole tree. Talk-time and words per minute are **derived** from segments when
@@ -140,6 +154,12 @@ a meeting is read, not stored, so they can never go stale after a speaker is ren
 | PATCH / DELETE | `/api/action-items/{id}` | Edit / complete / reassign / delete |
 | GET | `/api/action-items?status=open\|done\|all` | Tasks across meetings |
 | GET | `/api/search?q=` | Global search (titles and transcript lines, with timestamps) |
+| POST | `/api/ask` `{question, history, tag?}` | AskFred across recent meetings (optionally one channel/tag) |
+| GET | `/api/notifications` | Activity feed derived from meetings and open action items |
+| POST / DELETE | `/api/meetings/{id}/comments`, `/api/comments/{id}` | Comment on a transcript line |
+| POST / DELETE | `/api/meetings/{id}/soundbites`, `/api/soundbites/{id}` | Create / delete a clip |
+| POST / DELETE | `/api/meetings/{id}/bookmarks`, `/api/bookmarks/{id}` | Add / remove a bookmark |
+| PATCH | `/api/segments/{id}` | Edit a transcript line's text |
 | GET | `/api/participants`, `/api/tags`, `/api/me` | Filter options, current user |
 
 ## Deployment (Railway)

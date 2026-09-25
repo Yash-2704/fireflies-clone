@@ -1,6 +1,7 @@
 "use client";
 
 import { Copy, FileQuestion, Loader2, RefreshCw, Sparkles } from "lucide-react";
+import { useState } from "react";
 
 import { ActionItems } from "@/components/meeting/ActionItems";
 import { Player } from "@/components/meeting/usePlayer";
@@ -11,13 +12,15 @@ import { fmtDuration, fmtLongDate, fmtTime } from "@/lib/format";
 
 const SOURCE_LABEL = { ai: "AI generated", heuristic: "Auto-generated (AI offline)", seed: "Sample notes" };
 
-export function NotesPanel({ meeting, player, regenerating, onRegenerate, onActionItemsChange }: {
+export function NotesPanel({ meeting, player, regenerating, onRegenerate, onActionItemsChange, onRename }: {
   meeting: MeetingDetail;
   player: Player;
   regenerating: boolean;
   onRegenerate: () => void;
   onActionItemsChange: (items: ActionItem[]) => void;
+  onRename: (title: string) => Promise<void>;
 }) {
+  const [renaming, setRenaming] = useState(false);
   const toast = useToast();
   const summary = meeting.summary;
 
@@ -28,7 +31,21 @@ export function NotesPanel({ meeting, player, regenerating, onRegenerate, onActi
 
   return (
     <div className="mx-auto max-w-2xl px-8 py-8">
-      <h1 className="text-2xl font-semibold tracking-tight">{meeting.title}</h1>
+      {renaming ? (
+        <form onSubmit={async (e) => {
+          e.preventDefault();
+          const title = (new FormData(e.currentTarget).get("title") as string).trim();
+          if (title && title !== meeting.title) await onRename(title);
+          setRenaming(false);
+        }}>
+          <input name="title" autoFocus defaultValue={meeting.title} onBlur={(e) => e.currentTarget.form?.requestSubmit()}
+            onKeyDown={(e) => e.key === "Escape" && setRenaming(false)} aria-label="Meeting title"
+            className="w-full rounded-md border border-primary bg-card px-2 py-1 text-2xl font-semibold tracking-tight outline-none" />
+        </form>
+      ) : (
+        <h1 onClick={() => setRenaming(true)} title="Click to rename"
+          className="-mx-2 cursor-text rounded-md px-2 py-1 text-2xl font-semibold tracking-tight hover:bg-card">{meeting.title}</h1>
+      )}
       <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-muted">
         <span className="flex items-center gap-1.5"><Avatar name={meeting.organizer.name} size={18} square />{meeting.organizer.name}</span>
         <span>{fmtLongDate(meeting.date)}</span>

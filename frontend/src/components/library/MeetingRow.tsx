@@ -1,11 +1,13 @@
 "use client";
 
-import { ChevronRight, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { ChevronRight, Download, Link2, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
 import { Avatar } from "@/components/ui/Avatar";
-import { MeetingListItem } from "@/lib/api";
+import { useToast } from "@/components/ui/Toast";
+import { api, MeetingListItem } from "@/lib/api";
+import { exportNotesMarkdown } from "@/lib/export";
 import { fmtDateTime, fmtDuration } from "@/lib/format";
 
 export function MeetingRow({ meeting, onEdit, onDelete }: {
@@ -13,6 +15,7 @@ export function MeetingRow({ meeting, onEdit, onDelete }: {
   onEdit: () => void;
   onDelete: () => void;
 }) {
+  const toast = useToast();
   const [menu, setMenu] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -52,8 +55,20 @@ export function MeetingRow({ meeting, onEdit, onDelete }: {
         <Link href={`/meetings/${meeting.id}`} className="btn-ghost">Details <ChevronRight size={14} /></Link>
         {menu && (
           <div className="absolute right-0 top-9 z-30 w-40 rounded-lg border border-line bg-panel p-1 shadow-xl">
+            <button onClick={() => {
+              setMenu(false);
+              navigator.clipboard.writeText(`${location.origin}/meetings/${meeting.id}`).then(() => toast.success("Link copied"));
+            }} className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-[13px] hover:bg-hover">
+              <Link2 size={13} /> Copy link
+            </button>
+            <button onClick={() => {
+              setMenu(false);
+              api.meeting(meeting.id).then(exportNotesMarkdown).catch((e) => toast.error(e.message));
+            }} className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-[13px] hover:bg-hover">
+              <Download size={13} /> Download notes
+            </button>
             <button onClick={() => { setMenu(false); onEdit(); }} className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-[13px] hover:bg-hover">
-              <Pencil size={13} /> Edit details
+              <Pencil size={13} /> Rename / edit
             </button>
             <button onClick={() => { setMenu(false); onDelete(); }} className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-[13px] text-red-400 hover:bg-hover">
               <Trash2 size={13} /> Delete

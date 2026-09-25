@@ -181,8 +181,15 @@ reference a specific moment, cite a single timestamp as [mm:ss] (no ranges). Use
 "- " bullets only; no other markdown. If the answer isn't in the meeting, say so plainly."""
 
 
-def answer_question(context: str, question: str, history: list[dict]) -> tuple[str, str]:
-    messages = [{"role": "system", "content": f"{ASK_PROMPT}\n\n{context}"}]
+WORKSPACE_PROMPT = """You are AskFred, the Fireflies.ai assistant, answering across the user's meetings.
+Use only the meeting summaries and action items below. Be concise; use "- " bullets for lists. Whenever
+you refer to a meeting, write its exact title in double square brackets, like [[Weekly Sync]], so the
+app can link it. If the answer isn't in these meetings, say so plainly. No other markdown."""
+
+
+def answer_question(context: str, question: str, history: list[dict],
+                    prompt: str = ASK_PROMPT) -> tuple[str, str]:
+    messages = [{"role": "system", "content": f"{prompt}\n\n{context}"}]
     messages += [{"role": m["role"], "content": m["content"]} for m in history[-6:]]
     messages.append({"role": "user", "content": question})
     answer = _chat(messages)
@@ -195,8 +202,8 @@ def _keyword_answer(context: str, question: str) -> str:
     words = {w for w in re.findall(r"[a-z]{4,}", question.lower())}
     hits = [
         line for line in context.splitlines()
-        if line.startswith("[") and words & set(re.findall(r"[a-z]{4,}", line.lower()))
+        if line.startswith(("[", "- ", "Summary:")) and words & set(re.findall(r"[a-z]{4,}", line.lower()))
     ]
     if not hits:
-        return "I couldn't find anything about that in this meeting. (AI is offline — showing keyword matches only.)"
+        return "I couldn't find anything about that. (AI is offline — showing keyword matches only.)"
     return "AI is offline, but these moments look relevant:\n" + "\n".join(f"- {h}" for h in hits[:5])

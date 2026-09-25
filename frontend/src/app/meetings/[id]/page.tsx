@@ -1,17 +1,19 @@
 "use client";
 
-import { Download, FileText, Video, Info, Link2, MoreHorizontal, PanelLeftClose, PanelLeftOpen, Printer, RefreshCw, Share2, Trash2 } from "lucide-react";
+import { Bookmark as BookmarkIcon, Download, FileText, MessageSquare, Scissors, Search, Video, Info, Link2, MoreHorizontal, PanelLeftClose, PanelLeftOpen, Printer, RefreshCw, Share2, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
 
 import { EditMeetingModal } from "@/components/library/EditMeetingModal";
+import { BookmarksPanel, CommentsPanel, SoundbitesPanel } from "@/components/meeting/AnnotationPanels";
 import { AskFredPanel } from "@/components/meeting/AskFredPanel";
 import { MeetingMedia } from "@/components/meeting/MeetingMedia";
 import { NotesPanel } from "@/components/meeting/NotesPanel";
 import { PlayerBar } from "@/components/meeting/PlayerBar";
 import { SmartSearchPanel } from "@/components/meeting/SmartSearchPanel";
 import { TranscriptFilter, TranscriptPanel } from "@/components/meeting/TranscriptPanel";
+import { useAnnotations } from "@/components/meeting/useAnnotations";
 import { usePlayer } from "@/components/meeting/usePlayer";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { useToast } from "@/components/ui/Toast";
@@ -44,6 +46,8 @@ function MeetingView({ meeting, setMeeting }: { meeting: MeetingDetail; setMeeti
   const toast = useToast();
   const params = useSearchParams();
   const player = usePlayer(meeting.duration_sec);
+  const annotations = useAnnotations(meeting, setMeeting);
+  const [leftPanel, setLeftPanel] = useState<"search" | "soundbites" | "comments" | "bookmarks">("search");
   const [tab, setTab] = useState<"askfred" | "transcript">("transcript");
   const [filter, setFilter] = useState<TranscriptFilter>(null);
   const [leftOpen, setLeftOpen] = useState(true);
@@ -157,9 +161,34 @@ function MeetingView({ meeting, setMeeting }: { meeting: MeetingDetail; setMeeti
 
       <div className="flex min-h-0 flex-1">
         {leftOpen && (
-          <aside className="hidden w-72 shrink-0 overflow-y-auto border-r border-line bg-panel lg:block print:hidden">
-            <div className="border-b border-line px-4 py-3 text-[13px] font-medium">Smart Search</div>
-            <SmartSearchPanel meeting={meeting} filter={filter} onFilter={applyFilter} />
+          <aside className="hidden shrink-0 border-r border-line bg-panel lg:flex print:hidden">
+            {/* Fireflies-style mini rail: Smart Search · Soundbites · Comments · Bookmarks */}
+            <div className="flex w-11 flex-col items-center gap-1 border-r border-line py-2">
+              {([
+                ["search", "Smart Search", Search, 0],
+                ["soundbites", "Soundbites", Scissors, meeting.soundbites.length],
+                ["comments", "Comments", MessageSquare, meeting.comments.length],
+                ["bookmarks", "Bookmarks", BookmarkIcon, meeting.bookmarks.length],
+              ] as const).map(([id, label, Icon, count]) => (
+                <button key={id} onClick={() => setLeftPanel(id)} title={label} aria-label={label}
+                  className={`relative rounded-md p-2 ${leftPanel === id ? "bg-primary-soft text-primary" : "text-muted hover:bg-hover hover:text-text"}`}>
+                  <Icon size={16} />
+                  {count > 0 && <span className="absolute -right-0.5 -top-0.5 rounded-full bg-primary px-1 text-[9px] leading-3 text-white">{count}</span>}
+                </button>
+              ))}
+            </div>
+            <div className="flex w-72 flex-col overflow-hidden">
+              <div className="border-b border-line px-4 py-3 text-[13px] font-medium">
+                {{ search: "Smart Search", soundbites: `Soundbites · ${meeting.soundbites.length}`,
+                   comments: `Comments · ${meeting.comments.length}`, bookmarks: `Bookmarks · ${meeting.bookmarks.length}` }[leftPanel]}
+              </div>
+              <div className="min-h-0 flex-1 overflow-y-auto">
+                {leftPanel === "search" && <SmartSearchPanel meeting={meeting} filter={filter} onFilter={applyFilter} />}
+                {leftPanel === "soundbites" && <SoundbitesPanel meeting={meeting} player={player} annotations={annotations} />}
+                {leftPanel === "comments" && <CommentsPanel meeting={meeting} player={player} annotations={annotations} userName={meeting.organizer.name} />}
+                {leftPanel === "bookmarks" && <BookmarksPanel meeting={meeting} player={player} annotations={annotations} />}
+              </div>
+            </div>
           </aside>
         )}
         <section className={`min-w-0 flex-1 overflow-y-auto ${mobilePane === "side" ? "max-md:hidden" : ""}`}>
@@ -168,7 +197,15 @@ function MeetingView({ meeting, setMeeting }: { meeting: MeetingDetail; setMeeti
               onElement={player.attachMedia} onClick={player.toggle} />
           )}
           <NotesPanel meeting={meeting} player={player} regenerating={regenerating} onRegenerate={regenerate}
-            onActionItemsChange={(action_items) => setMeeting({ ...meeting, action_items })} />
+            onActionItemsChange={(action_items) => setMeeting({ ...meeting, action_items })}
+            onRename={async (title) => {
+              try {
+                setMeeting(await api.updateMeeting(meeting.id, { title }));
+                toast.success("Meeting renamed");
+              } catch (e) {
+                toast.error((e as Error).message);
+              }
+            }} />
         </section>
         <aside className={`relative flex w-[420px] shrink-0 flex-col border-l border-line bg-panel print:hidden ${mobilePane === "notes" ? "max-md:hidden" : "max-md:w-full"}`}>
           <div className="flex gap-4 border-b border-line px-4 max-md:hidden">
@@ -182,6 +219,7 @@ function MeetingView({ meeting, setMeeting }: { meeting: MeetingDetail; setMeeti
           {/* Both tabs stay mounted so the AskFred conversation survives switching tabs. */}
           <div className={tab === "transcript" ? "flex min-h-0 flex-1 flex-col" : "hidden"}>
             <TranscriptPanel meeting={meeting} player={player} filter={filter} onClearFilter={() => setFilter(null)}
+              annotations={annotations}
               onRenameSpeaker={async (sid, name) => {
                 try {
                   setMeeting(await api.renameSpeaker(meeting.id, sid, name));
@@ -197,7 +235,7 @@ function MeetingView({ meeting, setMeeting }: { meeting: MeetingDetail; setMeeti
         </aside>
       </div>
 
-      <div className="print:hidden"><PlayerBar player={player} /></div>
+      <div className="print:hidden"><PlayerBar player={player} bookmarks={meeting.bookmarks} onBookmark={annotations.addBookmark} /></div>
 
       {editing && <EditMeetingModal meeting={meeting} onClose={() => setEditing(false)} onSaved={setMeeting} />}
       {deleting && (

@@ -8,9 +8,10 @@ import { FiltersPopover } from "@/components/library/FiltersPopover";
 import { MeetingRow } from "@/components/library/MeetingRow";
 import { NewMeetingModal } from "@/components/library/NewMeetingModal";
 import { TopBar } from "@/components/shell/TopBar";
+import { WorkspaceAskFred } from "@/components/shell/WorkspaceAskFred";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { useToast } from "@/components/ui/Toast";
-import { api, MeetingFilters, MeetingListItem, Tag } from "@/lib/api";
+import { api, MeetingFilters, MeetingListItem, Tag, User } from "@/lib/api";
 import { dayGroup } from "@/lib/format";
 
 export default function MeetingsPage() {
@@ -22,6 +23,8 @@ export default function MeetingsPage() {
   const [editing, setEditing] = useState<MeetingListItem | null>(null);
   const [deleting, setDeleting] = useState<MeetingListItem | null>(null);
   const [creating, setCreating] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  useEffect(() => { api.me().then(setUser).catch(() => {}); }, []);
 
   const load = useCallback(() => {
     api.meetings(filters).then((r) => setMeetings(r.meetings)).catch((e) => {
@@ -121,6 +124,7 @@ export default function MeetingsPage() {
             </div>
           </div>
         </section>
+        <WorkspaceAskFred userName={user?.name ?? ""} tag={filters.tag} />
       </div>
 
       {creating && <NewMeetingModal onClose={() => setCreating(false)} />}

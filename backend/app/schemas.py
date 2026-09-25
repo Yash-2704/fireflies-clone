@@ -83,12 +83,66 @@ class ActionItemOut(ORM):
     created_at: datetime
 
 
+class CommentOut(ORM):
+    id: int
+    segment_id: int
+    body: str
+    created_at: datetime
+
+
+class SoundbiteOut(ORM):
+    id: int
+    title: str
+    start_sec: float
+    end_sec: float
+    created_at: datetime
+
+
+class BookmarkOut(ORM):
+    id: int
+    kind: str
+    at_sec: float
+    created_at: datetime
+
+
 class MeetingDetail(MeetingListItem):
     speakers: list[SpeakerOut]
     segments: list[SegmentOut]
     summary: SummaryOut | None
     chapters: list[ChapterOut]
     action_items: list[ActionItemOut]
+    comments: list[CommentOut]
+    soundbites: list[SoundbiteOut]
+    bookmarks: list[BookmarkOut]
+
+
+class CommentCreate(BaseModel):
+    segment_id: int
+    body: str = Field(min_length=1, max_length=2000)
+
+
+class SoundbiteCreate(BaseModel):
+    title: str = Field(min_length=1, max_length=255)
+    start_sec: float = Field(ge=0)
+    end_sec: float = Field(gt=0)
+
+
+class BookmarkCreate(BaseModel):
+    kind: str = Field(pattern="^(important|action|positive|negative)$")
+    at_sec: float = Field(ge=0)
+
+
+class SegmentUpdate(BaseModel):
+    text: str = Field(min_length=1, max_length=5000)
+
+
+class Notification(BaseModel):
+    kind: str  # "notes_ready" | "tasks_due"
+    title: str
+    body: str
+    href: str
+    at: datetime
+
 
 
 class MeetingUpdate(BaseModel):
@@ -141,3 +195,7 @@ class AskRequest(BaseModel):
 class AskResponse(BaseModel):
     answer: str
     source: str
+
+
+class GlobalAskRequest(AskRequest):
+    tag: str | None = None

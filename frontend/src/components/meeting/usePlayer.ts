@@ -16,6 +16,7 @@ export function usePlayer(fallbackDuration: number) {
   const [playing, setPlaying] = useState(false);
   const [rate, setRateState] = useState(1);
   const timeRef = useRef(0);
+  const stopAt = useRef<number | null>(null); // end of the soundbite being played, if any
   const duration = mediaDuration ?? fallbackDuration;
 
   // Mirror the media element's own state (it can also be paused by the browser, end, etc.).
@@ -48,12 +49,19 @@ export function usePlayer(fallbackDuration: number) {
       }
       last = now;
       setTime(timeRef.current);
+      if (stopAt.current != null && timeRef.current >= stopAt.current) {
+        stopAt.current = null;
+        if (media) media.pause();
+        else setPlaying(false);
+        return;
+      }
       frame = requestAnimationFrame(tick);
     });
     return () => cancelAnimationFrame(frame);
   }, [playing, rate, duration, media]);
 
   const seek = useCallback((t: number) => {
+    stopAt.current = null; // a manual seek cancels soundbite playback bounds
     const next = Math.max(0, Math.min(duration, t));
     timeRef.current = next;
     if (media) media.currentTime = next;
@@ -70,10 +78,18 @@ export function usePlayer(fallbackDuration: number) {
     }
   }, [duration, media, seek]);
 
+  /** Play just [start, end] — used for soundbites. */
+  const playRange = useCallback((start: number, end: number) => {
+    seek(start);
+    stopAt.current = end;
+    if (media) media.play().catch(() => setPlaying(false));
+    else setPlaying(true);
+  }, [media, seek]);
+
   const setRate = useCallback((r: number) => {
     setRateState(r);
     if (media) media.playbackRate = r;
   }, [media]);
 
-  return { time, playing, rate, duration, seek, toggle, setRate, attachMedia: setMedia };
+  return { time, playing, rate, duration, seek, toggle, playRange, setRate, attachMedia: setMedia };
 }

@@ -37,6 +37,11 @@ export type ActionItem = {
   created_at: string;
 };
 export type Task = ActionItem & { meeting_title: string };
+export type Comment = { id: number; segment_id: number; body: string; created_at: string };
+export type Soundbite = { id: number; title: string; start_sec: number; end_sec: number; created_at: string };
+export type BookmarkKind = "important" | "action" | "positive" | "negative";
+export type Bookmark = { id: number; kind: BookmarkKind; at_sec: number; created_at: string };
+export type Notification = { kind: "notes_ready" | "tasks_due"; title: string; body: string; href: string; at: string };
 
 export type MeetingDetail = MeetingListItem & {
   speakers: Speaker[];
@@ -44,6 +49,9 @@ export type MeetingDetail = MeetingListItem & {
   summary: { overview: string; source: "seed" | "ai" | "heuristic"; generated_at: string } | null;
   chapters: Chapter[];
   action_items: ActionItem[];
+  comments: Comment[];
+  soundbites: Soundbite[];
+  bookmarks: Bookmark[];
 };
 
 export type SearchHit = {
@@ -124,6 +132,21 @@ export const api = {
   updateActionItem: (id: number, body: Partial<{ text: string; assignee_id: number | null; is_completed: boolean }>) =>
     request<ActionItem>(`/action-items/${id}`, json("PATCH", body)),
   deleteActionItem: (id: number) => request<void>(`/action-items/${id}`, { method: "DELETE" }),
+
+  addComment: (meetingId: number, segment_id: number, body: string) =>
+    request<Comment>(`/meetings/${meetingId}/comments`, json("POST", { segment_id, body })),
+  deleteComment: (id: number) => request<void>(`/comments/${id}`, { method: "DELETE" }),
+  addSoundbite: (meetingId: number, body: { title: string; start_sec: number; end_sec: number }) =>
+    request<Soundbite>(`/meetings/${meetingId}/soundbites`, json("POST", body)),
+  deleteSoundbite: (id: number) => request<void>(`/soundbites/${id}`, { method: "DELETE" }),
+  addBookmark: (meetingId: number, kind: BookmarkKind, at_sec: number) =>
+    request<Bookmark>(`/meetings/${meetingId}/bookmarks`, json("POST", { kind, at_sec })),
+  deleteBookmark: (id: number) => request<void>(`/bookmarks/${id}`, { method: "DELETE" }),
+  editSegment: (id: number, text: string) => request<Segment>(`/segments/${id}`, json("PATCH", { text })),
+
+  askWorkspace: (question: string, history: { role: string; content: string }[], tag?: string) =>
+    request<{ answer: string; source: string }>("/ask", json("POST", { question, history, tag })),
+  notifications: () => request<Notification[]>("/notifications"),
 
   search: (q: string) => request<SearchHit[]>(`/search?q=${encodeURIComponent(q)}`),
   participants: () => request<Participant[]>("/participants"),

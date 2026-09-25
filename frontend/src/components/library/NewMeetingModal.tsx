@@ -17,11 +17,11 @@ const EXAMPLE = `[00:00] Alice: Let's review the launch checklist.
 [00:12] Bob: Docs are done. I'll send the release notes by Friday.`;
 
 /** Create a meeting from a recording (transcribed by the backend), a transcript file, or pasted text. */
-export function NewMeetingModal({ onClose }: { onClose: () => void }) {
+export function NewMeetingModal({ onClose, initialMode = "upload" }: { onClose: () => void; initialMode?: "upload" | "paste" }) {
   const router = useRouter();
   const toast = useToast();
   const fileInput = useRef<HTMLInputElement>(null);
-  const [mode, setMode] = useState<"upload" | "paste">("upload");
+  const [mode, setMode] = useState<"upload" | "paste">(initialMode);
   const [file, setFile] = useState<File | null>(null);
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);

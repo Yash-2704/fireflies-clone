@@ -143,74 +143,74 @@ MEETINGS = [
     },
     {
         "title": "Design Review — Meeting Detail Page",
-        "days_ago": 4, "hour": 14,
+        "audio": "design-review-meeting-detail-page.mp3", "days_ago": 4, "hour": 14,
         "participants": ["Maria Lopez", "Priya Sharma", "Sofia Rossi"],
         "tags": ["design"],
         "transcript": """
 [00:00] Maria Lopez: Thanks for joining. I want feedback on the meeting detail page before we lock it. I'll share my screen.
-[00:08] Maria Lopez: The layout is three columns. Smart search and speaker stats on the left, the notes in the middle, and a tabbed panel on the right for the transcript and the AI assistant. The player is pinned along the bottom.
-[00:24] Priya Sharma: Why put the player at the bottom rather than above the notes?
+[00:07] Maria Lopez: The layout is three columns. Smart search and speaker stats on the left, the notes in the middle, and a tabbed panel on the right for the transcript and the AI assistant. The player is pinned along the bottom.
+[00:23] Priya Sharma: Why put the player at the bottom rather than above the notes?
 [00:28] Maria Lopez: Because people scroll the notes and the transcript a lot. If the player is at the top, it scrolls away and you lose the controls. At the bottom it's always reachable.
-[00:40] Sofia Rossi: From an implementation side that's easier too. One player instance for the whole page, and both panels just read the current time.
-[00:49] Priya Sharma: Makes sense. What about small screens?
-[00:53] Maria Lopez: Under a laptop width, the left column collapses into a drawer and the right panel becomes a tab next to notes.
-[01:02] Priya Sharma: The speaker talk time ring is nice, but I'm not sure people understand words per minute.
-[01:08] Maria Lopez: Fair. I could add a tooltip explaining it. Talk time percentage is the more useful number anyway, so I'll make that the primary one.
-[01:18] Sofia Rossi: One concern. The transcript search highlights matches, but if there are forty matches you have no idea where you are. Can we show "3 of 40" with up and down arrows?
+[00:37] Sofia Rossi: From an implementation side that's easier too. One player instance for the whole page, and both panels just read the current time.
+[00:46] Priya Sharma: Makes sense. What about small screens?
+[00:50] Maria Lopez: Under a laptop width, the left column collapses into a drawer and the right panel becomes a tab next to notes.
+[01:00] Priya Sharma: The speaker talk time ring is nice, but I'm not sure people understand words per minute.
+[01:06] Maria Lopez: Fair. I could add a tooltip explaining it. Talk time percentage is the more useful number anyway, so I'll make that the primary one.
+[01:17] Sofia Rossi: One concern. The transcript search highlights matches, but if there are forty matches you have no idea where you are. Can we show "3 of 40" with up and down arrows?
 [01:30] Maria Lopez: Yes, that's a good addition. I'll add a match counter with next and previous.
 [01:36] Priya Sharma: Colors. The speaker colors are quite saturated on the dark background. They're a bit hard on the eyes.
 [01:43] Maria Lopez: I'll tone them down and check contrast. I want every speaker color to pass AA against the panel background.
-[01:51] Sofia Rossi: Also, can the action items be edited in place? Opening a modal just to fix a typo feels heavy.
-[01:58] Maria Lopez: Agreed. Inline editing for text, and a small dropdown for the assignee.
+[01:52] Sofia Rossi: Also, can the action items be edited in place? Opening a modal just to fix a typo feels heavy.
+[01:59] Maria Lopez: Agreed. Inline editing for text, and a small dropdown for the assignee.
 [02:05] Priya Sharma: Great review. Let's lock it after these changes. Maria, can you have the updated version by Wednesday?
-[02:11] Maria Lopez: Yes, Wednesday works.
+[02:14] Maria Lopez: Yes, Wednesday works.
 """,
         "notes": {
             "overview": "Maria presented the three-column meeting detail layout: smart search and speaker stats on the left, notes in the centre, and transcript plus AI assistant tabs on the right, with the player pinned to the bottom so it is always reachable. Feedback: make talk-time percentage the primary speaker metric, add a match counter to transcript search, tone down speaker colours to pass AA contrast, and allow inline editing of action items. The updated design is due Wednesday.",
             "chapters": [
-                {"title": "Three-column layout & bottom player", "summary": "The player stays pinned so controls never scroll away; one player instance feeds both panels.", "start": "00:08"},
-                {"title": "Responsive behaviour", "summary": "The left column becomes a drawer; the right panel becomes a tab.", "start": "00:53"},
-                {"title": "Speaker stats & search UX", "summary": "Talk-time % as the primary metric; add a \"3 of 40\" match navigator.", "start": "01:02"},
+                {"title": "Three-column layout & bottom player", "summary": "The player stays pinned so controls never scroll away; one player instance feeds both panels.", "start": "00:07"},
+                {"title": "Responsive behaviour", "summary": "The left column becomes a drawer; the right panel becomes a tab.", "start": "00:50"},
+                {"title": "Speaker stats & search UX", "summary": "Talk-time % as the primary metric; add a \"3 of 40\" match navigator.", "start": "01:00"},
                 {"title": "Colour contrast & inline editing", "summary": "AA-compliant speaker colours; edit action items in place.", "start": "01:36"},
             ],
             "action_items": [
                 {"text": "Add a match counter with next/previous to transcript search", "assignee": "Maria Lopez", "start": "01:30"},
                 {"text": "Tone down speaker colours to pass AA contrast", "assignee": "Maria Lopez", "start": "01:43"},
-                {"text": "Design inline editing for action item text and assignee", "assignee": "Maria Lopez", "start": "01:58"},
-                {"text": "Deliver the updated meeting detail design by Wednesday", "assignee": "Maria Lopez", "start": "02:11"},
+                {"text": "Design inline editing for action item text and assignee", "assignee": "Maria Lopez", "start": "01:59"},
+                {"text": "Deliver the updated meeting detail design by Wednesday", "assignee": "Maria Lopez", "start": "02:14"},
             ],
         },
     },
     {
         "title": "Q4 Marketing Planning",
-        "days_ago": 8, "hour": 11,
+        "audio": "q4-marketing-planning.mp3", "days_ago": 8, "hour": 11,
         "participants": ["Hannah Wright", "Yash Aggarwal", "Tom Becker"],
         "tags": ["marketing", "planning"],
         "transcript": """
 [00:00] Hannah Wright: Okay, Q4 planning. I want to leave with three priorities and owners. Let me start with where we are. Signups were up eighteen percent last quarter, but trial-to-paid conversion slipped from nine to seven and a half percent.
-[00:18] Yash Aggarwal: Do we know why conversion dropped?
-[00:21] Hannah Wright: Partly the mix. A lot of the new signups came from the viral template post, and those people are students and hobbyists. They were never going to pay.
-[00:33] Tom Becker: On the sales side, the trials that do convert almost always connected their calendar in the first day. If they don't, they basically never come back.
-[00:43] Hannah Wright: That's a strong signal. So priority one: get more trials to connect a calendar on day one.
-[00:50] Yash Aggarwal: We could change onboarding so connecting the calendar is the first step, not an optional one at the end. And send a reminder email after two hours if they skip it.
-[01:02] Hannah Wright: Let's test it. Yash, can you own the onboarding experiment?
+[00:16] Yash Aggarwal: Do we know why conversion dropped?
+[00:20] Hannah Wright: Partly the mix. A lot of the new signups came from the viral template post, and those people are students and hobbyists. They were never going to pay.
+[00:32] Tom Becker: On the sales side, the trials that do convert almost always connected their calendar in the first day. If they don't, they basically never come back.
+[00:42] Hannah Wright: That's a strong signal. So priority one: get more trials to connect a calendar on day one.
+[00:49] Yash Aggarwal: We could change onboarding so connecting the calendar is the first step, not an optional one at the end. And send a reminder email after two hours if they skip it.
+[00:59] Hannah Wright: Let's test it. Yash, can you own the onboarding experiment?
 [01:06] Yash Aggarwal: Yes. I'll write the spec this week and aim to launch the A/B test in two weeks.
 [01:12] Hannah Wright: Priority two is content for sales teams. Our best customers are sales orgs, but our content is generic productivity stuff.
 [01:22] Tom Becker: I can help with that. I have a dozen customer calls where teams explained exactly how they use us for pipeline reviews. With permission, those could become case studies.
-[01:34] Hannah Wright: Perfect. Tom, can you get permission from three customers this month?
+[01:33] Hannah Wright: Perfect. Tom, can you get permission from three customers this month?
 [01:38] Tom Becker: I'll reach out to five, expecting three to say yes.
 [01:42] Hannah Wright: Priority three is the webinar series. One webinar a month on meeting productivity for revenue teams. I'll own that one.
 [01:52] Yash Aggarwal: What's the budget looking like?
-[01:55] Hannah Wright: Forty thousand for the quarter. Twenty-five goes to paid acquisition targeting sales titles on LinkedIn, ten to content production and five to the webinars.
-[02:07] Tom Becker: Can we measure LinkedIn by pipeline rather than signups? Signups will make it look good even if it's the wrong people.
-[02:14] Hannah Wright: Yes, good point. We'll report on sales-qualified pipeline from LinkedIn, not signups. I'll set up the attribution with the ops team.
-[02:23] Hannah Wright: Great. So, onboarding experiment with Yash, case studies with Tom, webinars and attribution with me. Let's check progress in two weeks.
+[01:54] Hannah Wright: Forty thousand for the quarter. Twenty-five goes to paid acquisition targeting sales titles on LinkedIn, ten to content production and five to the webinars.
+[02:06] Tom Becker: Can we measure LinkedIn by pipeline rather than signups? Signups will make it look good even if it's the wrong people.
+[02:13] Hannah Wright: Yes, good point. We'll report on sales-qualified pipeline from LinkedIn, not signups. I'll set up the attribution with the ops team.
+[02:24] Hannah Wright: Great. So, onboarding experiment with Yash, case studies with Tom, webinars and attribution with me. Let's check progress in two weeks.
 """,
         "notes": {
             "overview": "Signups grew 18% last quarter, but trial-to-paid conversion fell from 9% to 7.5%, largely because of low-intent viral signups. Trials that connect a calendar on day one are far more likely to convert. The three Q4 priorities are an onboarding experiment that makes calendar connection the first step, sales-focused case studies, and a monthly webinar series for revenue teams. The $40k budget is split 25k LinkedIn / 10k content / 5k webinars, and LinkedIn will be measured on sales-qualified pipeline rather than signups.",
             "chapters": [
                 {"title": "Q3 results & conversion drop", "summary": "+18% signups, conversion down to 7.5%, driven by low-intent traffic.", "start": "00:00"},
-                {"title": "Priority 1: calendar-first onboarding", "summary": "Day-one calendar connection predicts conversion; A/B test planned.", "start": "00:33"},
+                {"title": "Priority 1: calendar-first onboarding", "summary": "Day-one calendar connection predicts conversion; A/B test planned.", "start": "00:32"},
                 {"title": "Priority 2 & 3: case studies and webinars", "summary": "Sales-team case studies from customer calls; a monthly webinar series.", "start": "01:12"},
                 {"title": "Budget & measurement", "summary": "$40k split across channels; measure LinkedIn on pipeline, not signups.", "start": "01:52"},
             ],
@@ -218,46 +218,46 @@ MEETINGS = [
                 {"text": "Write the calendar-first onboarding spec and launch the A/B test in two weeks", "assignee": "Yash Aggarwal", "start": "01:06"},
                 {"text": "Ask five customers for case study permission (target three)", "assignee": "Tom Becker", "start": "01:38"},
                 {"text": "Launch the monthly webinar series for revenue teams", "assignee": "Hannah Wright", "start": "01:42"},
-                {"text": "Set up LinkedIn pipeline attribution with the ops team", "assignee": "Hannah Wright", "start": "02:14"},
+                {"text": "Set up LinkedIn pipeline attribution with the ops team", "assignee": "Hannah Wright", "start": "02:13"},
             ],
         },
     },
     {
         "title": "Interview — Backend Engineer (Ravi Patel)",
-        "days_ago": 13, "hour": 16,
+        "audio": "interview-backend-engineer-ravi-patel.mp3", "days_ago": 13, "hour": 16,
         "participants": ["Arjun Mehta", "Ravi Patel"],
         "tags": ["hiring"],
         "transcript": """
 [00:00] Arjun Mehta: Hi Ravi, thanks for coming in. I'm Arjun, I lead the backend team here. We'll spend most of the time on a system design question, and you'll have time for questions at the end.
-[00:12] Ravi Patel: Sounds great, thanks for having me.
-[00:15] Arjun Mehta: Before we start, tell me briefly about your current role.
-[00:19] Ravi Patel: I'm a backend engineer at a fintech company, about four years. I own the payments reconciliation service. It's Python and Postgres, processing around two million transactions a day.
-[00:33] Arjun Mehta: Nice. Here's the design question. We record meetings and produce transcripts. Design the search so a user can find any phrase across all their meetings in under two hundred milliseconds.
-[00:47] Ravi Patel: Okay. First, some questions. How many meetings does a big customer have, and how long is a transcript?
-[00:54] Arjun Mehta: Large accounts have tens of thousands of meetings. A one hour meeting is about nine thousand words.
-[01:02] Ravi Patel: So a big account could have a few hundred million words. A LIKE query won't scale. I'd build an inverted index. Tokenize each transcript segment and map terms to segment IDs, and keep the segment's start time so results can jump straight into the recording.
-[01:20] Arjun Mehta: Where would that index live?
-[01:23] Ravi Patel: For an early product, Postgres full text search with a GIN index is plenty and keeps operations simple. At larger scale I'd move to something like OpenSearch, sharded by account, since queries never cross accounts.
-[01:39] Arjun Mehta: How do you keep the index up to date when transcripts change, like when a user renames a speaker?
-[01:45] Ravi Patel: I'd index asynchronously. When a meeting is processed or edited, publish an event and have a worker reindex just that meeting. Search is eventually consistent, which is fine as long as it's seconds, not minutes.
-[01:59] Arjun Mehta: Good. How would you rank results?
-[02:02] Ravi Patel: Exact phrase matches first, then recency, since people usually search for recent meetings. Maybe boost matches in the title or the summary over the raw transcript.
-[02:14] Arjun Mehta: Great answer. Any questions for me?
-[02:17] Ravi Patel: What does on-call look like, and how big is the team?
-[02:21] Arjun Mehta: Six engineers, one week on-call every six weeks, and pages are rare, maybe one or two a week. I'll send you our engineering handbook, it covers this in detail.
-[02:32] Ravi Patel: That would be great, thank you.
-[02:35] Arjun Mehta: Thanks Ravi. The recruiter will be in touch within a few days about next steps.
+[00:09] Ravi Patel: Sounds great, thanks for having me.
+[00:13] Arjun Mehta: Before we start, tell me briefly about your current role.
+[00:16] Ravi Patel: I'm a backend engineer at a fintech company, about four years. I own the payments reconciliation service. It's Python and Postgres, processing around two million transactions a day.
+[00:29] Arjun Mehta: Nice. Here's the design question. We record meetings and produce transcripts. Design the search so a user can find any phrase across all their meetings in under two hundred milliseconds.
+[00:41] Ravi Patel: Okay. First, some questions. How many meetings does a big customer have, and how long is a transcript?
+[00:48] Arjun Mehta: Large accounts have tens of thousands of meetings. A one hour meeting is about nine thousand words.
+[00:55] Ravi Patel: So a big account could have a few hundred million words. A LIKE query won't scale. I'd build an inverted index. Tokenize each transcript segment and map terms to segment IDs, and keep the segment's start time so results can jump straight into the recording.
+[01:13] Arjun Mehta: Where would that index live?
+[01:15] Ravi Patel: For an early product, Postgres full text search with a GIN index is plenty and keeps operations simple. At larger scale I'd move to something like OpenSearch, sharded by account, since queries never cross accounts.
+[01:31] Arjun Mehta: How do you keep the index up to date when transcripts change, like when a user renames a speaker?
+[01:36] Ravi Patel: I'd index asynchronously. When a meeting is processed or edited, publish an event and have a worker reindex just that meeting. Search is eventually consistent, which is fine as long as it's seconds, not minutes.
+[01:53] Arjun Mehta: Good. How would you rank results?
+[01:57] Ravi Patel: Exact phrase matches first, then recency, since people usually search for recent meetings. Maybe boost matches in the title or the summary over the raw transcript.
+[02:07] Arjun Mehta: Great answer. Any questions for me?
+[02:10] Ravi Patel: What does on-call look like, and how big is the team?
+[02:15] Arjun Mehta: Six engineers, one week on-call every six weeks, and pages are rare, maybe one or two a week. I'll send you our engineering handbook, it covers this in detail.
+[02:28] Ravi Patel: That would be great, thank you.
+[02:31] Arjun Mehta: Thanks Ravi. The recruiter will be in touch within a few days about next steps.
 """,
         "notes": {
             "overview": "System design interview with Ravi Patel, a backend engineer with four years in fintech who owns a payments reconciliation service (Python/Postgres, about 2M transactions per day). Asked to design sub-200ms phrase search across meetings, he sized the data, proposed an inverted index that stores segment start times, started with Postgres full-text search and a GIN index, planned to scale to OpenSearch sharded by account, used async per-meeting reindexing, and ranked by exact match, then recency, then field boosts. A strong, structured answer.",
             "chapters": [
-                {"title": "Candidate background", "summary": "Four years in fintech; owns a payments reconciliation service on Python/Postgres.", "start": "00:15"},
-                {"title": "System design: transcript search", "summary": "Inverted index with segment timestamps; Postgres FTS first, OpenSearch at scale.", "start": "00:33"},
-                {"title": "Index freshness & ranking", "summary": "Event-driven per-meeting reindexing; exact match, then recency, then field boosts.", "start": "01:39"},
-                {"title": "Candidate questions", "summary": "Team size and on-call load.", "start": "02:14"},
+                {"title": "Candidate background", "summary": "Four years in fintech; owns a payments reconciliation service on Python/Postgres.", "start": "00:13"},
+                {"title": "System design: transcript search", "summary": "Inverted index with segment timestamps; Postgres FTS first, OpenSearch at scale.", "start": "00:29"},
+                {"title": "Index freshness & ranking", "summary": "Event-driven per-meeting reindexing; exact match, then recency, then field boosts.", "start": "01:31"},
+                {"title": "Candidate questions", "summary": "Team size and on-call load.", "start": "02:07"},
             ],
             "action_items": [
-                {"text": "Send Ravi the engineering handbook", "assignee": "Arjun Mehta", "start": "02:21"},
+                {"text": "Send Ravi the engineering handbook", "assignee": "Arjun Mehta", "start": "02:15"},
             ],
         },
     },

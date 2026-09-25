@@ -1,15 +1,36 @@
 "use client";
 
-import { Bell, Search, UserPlus, Video } from "lucide-react";
+import { Calendar, ChevronDown, ClipboardPaste, Radio, Search, Upload, UserPlus, Video } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 
 import { NewMeetingModal } from "@/components/library/NewMeetingModal";
+import { NotificationsMenu } from "@/components/shell/NotificationsMenu";
 import { SearchModal } from "@/components/shell/SearchModal";
+import { useToast } from "@/components/ui/Toast";
 
 export function TopBar({ title }: { title: React.ReactNode }) {
   const [searching, setSearching] = useState(false);
-  const [creating, setCreating] = useState(false);
+  const [creating, setCreating] = useState<"upload" | "paste" | null>(null);
+  const [captureOpen, setCaptureOpen] = useState(false);
+  const captureRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+  const toast = useToast();
+
+  useEffect(() => {
+    if (!captureOpen) return;
+    const close = (e: MouseEvent) => !captureRef.current?.contains(e.target as Node) && setCaptureOpen(false);
+    document.addEventListener("mousedown", close);
+    return () => document.removeEventListener("mousedown", close);
+  }, [captureOpen]);
+
+  const captureItems = [
+    { label: "Upload audio or video", icon: Upload, run: () => setCreating("upload") },
+    { label: "Paste a transcript", icon: ClipboardPaste, run: () => setCreating("paste") },
+    { label: "Schedule new meeting", icon: Calendar, run: () => toast.success("Calendar scheduling is coming soon") },
+    { label: "Add to live meeting", icon: Radio, run: () => router.push("/live") },
+  ];
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -31,15 +52,26 @@ export function TopBar({ title }: { title: React.ReactNode }) {
         <kbd className="text-[11px]">⌘K</kbd>
       </button>
       <div className="flex flex-1 items-center justify-end gap-2">
-        <button aria-label="Notifications" className="relative rounded-md p-2 text-muted hover:bg-hover">
-          <Bell size={17} />
-          <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-red-500" />
-        </button>
+        <NotificationsMenu />
         <Link href="/team" className="btn-ghost hidden sm:inline-flex"><UserPlus size={15} /> Invite</Link>
-        <button onClick={() => setCreating(true)} className="btn-primary"><Video size={15} /> Capture</button>
+        <div ref={captureRef} className="relative">
+          <button onClick={() => setCaptureOpen(!captureOpen)} aria-expanded={captureOpen} className="btn-primary">
+            <Video size={15} /> Capture <ChevronDown size={14} />
+          </button>
+          {captureOpen && (
+            <div className="absolute right-0 top-10 z-50 w-56 rounded-lg border border-line bg-panel p-1 shadow-2xl">
+              {captureItems.map(({ label, icon: Icon, run }) => (
+                <button key={label} onClick={() => { setCaptureOpen(false); run(); }}
+                  className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-[13px] hover:bg-hover">
+                  <Icon size={14} className="text-muted" /> {label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
       {searching && <SearchModal onClose={() => setSearching(false)} />}
-      {creating && <NewMeetingModal onClose={() => setCreating(false)} />}
+      {creating && <NewMeetingModal initialMode={creating} onClose={() => setCreating(null)} />}
     </header>
   );
 }

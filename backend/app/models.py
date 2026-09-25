@@ -89,6 +89,17 @@ class Meeting(Base):
         back_populates="meeting", cascade="all, delete-orphan", passive_deletes=True,
         order_by="ActionItem.id",
     )
+    soundbites: Mapped[list["Soundbite"]] = relationship(
+        cascade="all, delete-orphan", passive_deletes=True, order_by="Soundbite.start_sec"
+    )
+    bookmarks: Mapped[list["Bookmark"]] = relationship(
+        cascade="all, delete-orphan", passive_deletes=True, order_by="Bookmark.at_sec"
+    )
+    # Comments belong to transcript lines; this read-only view gathers them per meeting.
+    comments: Mapped[list["Comment"]] = relationship(
+        secondary="segments", primaryjoin="Meeting.id == Segment.meeting_id",
+        secondaryjoin="Segment.id == Comment.segment_id", viewonly=True, order_by="Comment.created_at",
+    )
 
 
 class Speaker(Base):
@@ -163,3 +174,38 @@ class ActionItem(Base):
 
     meeting: Mapped[Meeting] = relationship(back_populates="action_items")
     assignee: Mapped[Participant | None] = relationship()
+
+
+class Comment(Base):
+    """A comment pinned to a transcript line (Fireflies' Comments panel)."""
+    __tablename__ = "comments"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    segment_id: Mapped[int] = mapped_column(ForeignKey("segments.id", ondelete="CASCADE"), index=True)
+    body: Mapped[str] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+
+    segment: Mapped[Segment] = relationship()
+
+
+class Soundbite(Base):
+    """A named clip of the recording, from start_sec to end_sec."""
+    __tablename__ = "soundbites"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    meeting_id: Mapped[int] = mapped_column(ForeignKey("meetings.id", ondelete="CASCADE"), index=True)
+    title: Mapped[str] = mapped_column(String(255))
+    start_sec: Mapped[float] = mapped_column(Float)
+    end_sec: Mapped[float] = mapped_column(Float)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+
+
+class Bookmark(Base):
+    """A one-click marker at a moment: important / action / positive / negative."""
+    __tablename__ = "bookmarks"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    meeting_id: Mapped[int] = mapped_column(ForeignKey("meetings.id", ondelete="CASCADE"), index=True)
+    kind: Mapped[str] = mapped_column(String(20))
+    at_sec: Mapped[float] = mapped_column(Float)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)

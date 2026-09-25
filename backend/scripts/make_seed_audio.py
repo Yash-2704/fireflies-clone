@@ -13,7 +13,6 @@ import subprocess
 import sys
 import time
 import wave
-from itertools import cycle
 from pathlib import Path
 
 import httpx
@@ -34,7 +33,7 @@ MAX_CHARS = 190  # keep each TTS request short; long turns are split by sentence
 FEMALE = {"Priya Sharma", "Maria Lopez", "Olivia Chen", "Sofia Rossi", "Hannah Wright"}
 VOICES = {"f": ["autumn", "diana", "hannah"], "m": ["troy", "austin", "daniel"]}
 
-keys = cycle(_KEYS)
+usable = list(_KEYS)  # keys drop out when their Groq org lacks Orpheus terms or daily quota
 
 
 def slug(title: str) -> str:
@@ -57,16 +56,18 @@ def tts(text: str, voice: str) -> Path:
     if path.exists():
         return path
     for attempt in range(60):
-        r = httpx.post(TTS_URL, timeout=120, headers={"Authorization": f"Bearer {next(keys)}"},
+        if not usable:
+            sys.exit("No key left with Orpheus access/quota (free tier: 3600 tokens/day per Groq org). "
+                     "Re-run later — finished clips are cached.")
+        key = usable[attempt % len(usable)]
+        r = httpx.post(TTS_URL, timeout=120, headers={"Authorization": f"Bearer {key}"},
                        json={"model": MODEL, "voice": voice, "input": text, "response_format": "wav"})
         if r.status_code == 200:
             path.write_bytes(r.content)
             return path
-        if "model_terms_required" in r.text:
-            continue  # this key's Groq org hasn't accepted Orpheus terms; try the next key
-        if r.status_code == 429 and "per day" in r.text:
-            sys.exit(f"Daily Orpheus quota used up for this Groq org: {r.json()['error']['message'][:200]}\n"
-                     "Re-run later (finished clips are cached) or add a key from another org.")
+        if "model_terms_required" in r.text or (r.status_code == 429 and "per day" in r.text):
+            usable.remove(key)  # this key's org can't serve Orpheus today; use the others
+            continue
         if r.status_code == 429:
             # Free tier: 1200 TTS tokens/min per key. Wait as long as Groq asks, then retry.
             time.sleep(float(r.headers.get("retry-after", 10)))
