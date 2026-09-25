@@ -5,139 +5,139 @@ instantly without calling the LLM."""
 MEETINGS = [
     {
         "title": "Weekly Product Sync — Smart Notes Launch",
-        "days_ago": 0, "hour": 10,
+        "audio": "weekly-product-sync-smart-notes-launch.mp3", "days_ago": 0, "hour": 10,
         "participants": ["Priya Sharma", "Daniel Kim", "Maria Lopez", "Yash Aggarwal"],
         "tags": ["product", "launch"],
         "transcript": """
 [00:00] Priya Sharma: Morning everyone. Main agenda today is the Smart Notes launch next Thursday, then a quick look at the beta feedback and whatever is blocking us.
-[00:14] Daniel Kim: Sounds good. Quick status from engineering: the summarization pipeline is feature complete. We're at about ninety two percent of meetings processed in under five minutes.
-[00:31] Priya Sharma: What happens to the other eight percent?
-[00:35] Daniel Kim: Mostly long meetings, over ninety minutes. We chunk the transcript and merge the summaries, and the merge step is the slow part. I think we can get it down by running the chunks in parallel.
-[00:52] Yash Aggarwal: Is that something we need before launch, or can it follow?
-[00:57] Daniel Kim: It can follow. Long meetings are only about four percent of volume. I'd rather not touch the pipeline the week of launch.
-[01:10] Priya Sharma: Agreed, let's keep it out of scope. Maria, where are we on the notes layout?
-[01:18] Maria Lopez: Final designs are in Figma. The big change from the beta is that every bullet in the notes now links to the moment in the recording. Beta users kept asking "where did this come from", so the timestamp is right there.
-[01:38] Yash Aggarwal: That was the number one piece of feedback in the survey, so good call.
-[01:44] Maria Lopez: I also simplified the action items. They're grouped by owner now instead of one long list.
-[01:53] Priya Sharma: Love it. Let's talk beta feedback. Yash, you ran the survey?
-[01:59] Yash Aggarwal: Yeah, we got a hundred and forty responses. Satisfaction was 4.3 out of 5. Top complaints were timestamps, which Maria just covered, and that summaries are too long for short meetings.
-[02:18] Daniel Kim: We can scale summary length with the meeting duration. That's a prompt change, maybe half a day.
-[02:26] Priya Sharma: Let's do it. Daniel, can you own that?
-[02:30] Daniel Kim: Yes, I'll have the length scaling done by Monday.
-[02:35] Priya Sharma: Great. Any blockers for launch?
-[02:39] Maria Lopez: The marketing page still has the old screenshots. I need the final build on staging to capture new ones.
-[02:48] Daniel Kim: Staging will have the release candidate tomorrow afternoon.
-[02:53] Maria Lopez: Then I'll update the screenshots on Friday and send them to marketing.
-[03:00] Yash Aggarwal: I'll write the launch email and the changelog entry. I'll share a draft by Wednesday so everyone can review.
-[03:10] Priya Sharma: Perfect. One more thing, pricing. Are we gating Smart Notes behind Pro?
-[03:17] Yash Aggarwal: The proposal is free users get three smart summaries a month, unlimited on Pro. It gives people a taste without giving it all away.
-[03:29] Priya Sharma: I like that. Let's go with three per month on free. I'll confirm with finance today.
-[03:37] Daniel Kim: I'll need the limit as a config flag so we can tune it without a deploy.
-[03:43] Priya Sharma: Makes sense. Okay, recap: launch Thursday, long meeting optimisation is post launch, Daniel on summary length, Maria on screenshots, Yash on the launch email, and I'll sort pricing with finance. Thanks all.
+[00:10] Daniel Kim: Sounds good. Quick status from engineering: the summarization pipeline is feature complete. We're at about ninety two percent of meetings processed in under five minutes.
+[00:21] Priya Sharma: What happens to the other eight percent?
+[00:25] Daniel Kim: Mostly long meetings, over ninety minutes. We chunk the transcript and merge the summaries, and the merge step is the slow part. I think we can get it down by running the chunks in parallel.
+[00:37] Yash Aggarwal: Is that something we need before launch, or can it follow?
+[00:41] Daniel Kim: It can follow. Long meetings are only about four percent of volume. I'd rather not touch the pipeline the week of launch.
+[00:49] Priya Sharma: Agreed, let's keep it out of scope. Maria, where are we on the notes layout?
+[00:55] Maria Lopez: Final designs are in Figma. The big change from the beta is that every bullet in the notes now links to the moment in the recording. Beta users kept asking "where did this come from", so the timestamp is right there.
+[01:09] Yash Aggarwal: That was the number one piece of feedback in the survey, so good call.
+[01:13] Maria Lopez: I also simplified the action items. They're grouped by owner now instead of one long list.
+[01:21] Priya Sharma: Love it. Let's talk beta feedback. Yash, you ran the survey?
+[01:27] Yash Aggarwal: Yeah, we got a hundred and forty responses. Satisfaction was 4.3 out of 5. Top complaints were timestamps, which Maria just covered, and that summaries are too long for short meetings.
+[01:41] Daniel Kim: We can scale summary length with the meeting duration. That's a prompt change, maybe half a day.
+[01:47] Priya Sharma: Let's do it. Daniel, can you own that?
+[01:52] Daniel Kim: Yes, I'll have the length scaling done by Monday.
+[01:55] Priya Sharma: Great. Any blockers for launch?
+[01:59] Maria Lopez: The marketing page still has the old screenshots. I need the final build on staging to capture new ones.
+[02:08] Daniel Kim: Staging will have the release candidate tomorrow afternoon.
+[02:11] Maria Lopez: Then I'll update the screenshots on Friday and send them to marketing.
+[02:16] Yash Aggarwal: I'll write the launch email and the changelog entry. I'll share a draft by Wednesday so everyone can review.
+[02:22] Priya Sharma: Perfect. One more thing, pricing. Are we gating Smart Notes behind Pro?
+[02:29] Yash Aggarwal: The proposal is free users get three smart summaries a month, unlimited on Pro. It gives people a taste without giving it all away.
+[02:39] Priya Sharma: I like that. Let's go with three per month on free. I'll confirm with finance today.
+[02:45] Daniel Kim: I'll need the limit as a config flag so we can tune it without a deploy.
+[02:50] Priya Sharma: Makes sense. Okay, recap: launch Thursday, long meeting optimisation is post launch, Daniel on summary length, Maria on screenshots, Yash on the launch email, and I'll sort pricing with finance. Thanks all.
 """,
         "notes": {
             "overview": "The team confirmed the Smart Notes launch for next Thursday. Engineering reported the summarization pipeline is feature complete, with 92% of meetings processed in under five minutes; optimising very long meetings was moved out of launch scope. Design shipped timestamped note bullets and owner-grouped action items in response to beta feedback (140 responses, 4.3/5). Free users will get three smart summaries per month, pending finance confirmation.",
             "chapters": [
-                {"title": "Engineering status & long meetings", "summary": "Pipeline is feature complete; the slow merge step for 90+ minute meetings will be optimised after launch.", "start": "00:14"},
-                {"title": "Notes layout redesign", "summary": "Every note bullet links to its moment in the recording, and action items are grouped by owner.", "start": "01:18"},
-                {"title": "Beta survey results", "summary": "4.3/5 satisfaction. Top complaints: missing timestamps and summaries that are too long for short meetings.", "start": "01:59"},
-                {"title": "Launch blockers", "summary": "Marketing screenshots need the release candidate on staging; the launch email and changelog are being drafted.", "start": "02:35"},
-                {"title": "Free tier pricing", "summary": "Three smart summaries per month on free, unlimited on Pro, behind a config flag.", "start": "03:10"},
+                {"title": "Engineering status & long meetings", "summary": "Pipeline is feature complete; the slow merge step for 90+ minute meetings will be optimised after launch.", "start": "00:10"},
+                {"title": "Notes layout redesign", "summary": "Every note bullet links to its moment in the recording, and action items are grouped by owner.", "start": "00:55"},
+                {"title": "Beta survey results", "summary": "4.3/5 satisfaction. Top complaints: missing timestamps and summaries that are too long for short meetings.", "start": "01:27"},
+                {"title": "Launch blockers", "summary": "Marketing screenshots need the release candidate on staging; the launch email and changelog are being drafted.", "start": "01:55"},
+                {"title": "Free tier pricing", "summary": "Three smart summaries per month on free, unlimited on Pro, behind a config flag.", "start": "02:22"},
             ],
             "action_items": [
-                {"text": "Scale summary length with meeting duration", "assignee": "Daniel Kim", "start": "02:30"},
-                {"text": "Put the free-tier summary limit behind a config flag", "assignee": "Daniel Kim", "start": "03:37"},
-                {"text": "Update marketing screenshots from staging and send them to marketing", "assignee": "Maria Lopez", "start": "02:53"},
-                {"text": "Draft the launch email and changelog entry for review", "assignee": "Yash Aggarwal", "start": "03:00"},
-                {"text": "Confirm the free-tier limit with finance", "assignee": "Priya Sharma", "start": "03:29"},
+                {"text": "Scale summary length with meeting duration", "assignee": "Daniel Kim", "start": "01:52"},
+                {"text": "Put the free-tier summary limit behind a config flag", "assignee": "Daniel Kim", "start": "02:45"},
+                {"text": "Update marketing screenshots from staging and send them to marketing", "assignee": "Maria Lopez", "start": "02:11"},
+                {"text": "Draft the launch email and changelog entry for review", "assignee": "Yash Aggarwal", "start": "02:16"},
+                {"text": "Confirm the free-tier limit with finance", "assignee": "Priya Sharma", "start": "02:39"},
             ],
         },
     },
     {
         "title": "Discovery Call — Brightwave Logistics",
-        "days_ago": 1, "hour": 15,
+        "audio": "discovery-call-brightwave-logistics.mp3", "days_ago": 1, "hour": 15,
         "participants": ["Yash Aggarwal", "Olivia Chen", "Tom Becker"],
         "tags": ["sales", "customer"],
         "transcript": """
 [00:00] Yash Aggarwal: Hi Olivia, thanks for making the time. I'm here with Tom from our solutions team. We'd love to hear how your team handles meetings today.
-[00:11] Olivia Chen: Sure. I run operations at Brightwave. We're about two hundred people, mostly dispatchers and account managers, and we spend a huge amount of time on calls with carriers and shippers.
-[00:26] Tom Becker: How do you capture what happens on those calls right now?
-[00:30] Olivia Chen: Honestly, badly. Account managers type notes into our CRM after the call, when they remember. Half the time the notes are two lines. When there's a dispute about a rate or a pickup window, we have nothing to go back to.
-[00:48] Yash Aggarwal: How often do those disputes come up?
-[00:52] Olivia Chen: Probably fifteen to twenty a month. Each one takes a manager a couple of hours to untangle, and some of them cost us real money in credits.
-[01:05] Tom Becker: That's a clear use case. Which calling tools are you on?
-[01:09] Olivia Chen: Mostly Microsoft Teams internally, and a lot of carriers still just phone us, so we have a dialer as well. It's RingCentral.
-[01:20] Tom Becker: Teams we support natively. For RingCentral we can ingest the call recordings through the integration, so those calls get transcribed as well.
-[01:31] Olivia Chen: That would matter a lot. Probably sixty percent of the important conversations happen on the phone.
-[01:38] Yash Aggarwal: And which CRM?
-[01:41] Olivia Chen: HubSpot. If the summary could land on the HubSpot deal automatically, my team would actually use it.
-[01:49] Tom Becker: That's exactly how the HubSpot integration works. Summary, action items and a link to the recording get logged against the contact and the deal.
-[01:59] Olivia Chen: What about security? Our shippers are sensitive about their rates being stored somewhere.
-[02:07] Yash Aggarwal: We're SOC 2 Type II, data is encrypted at rest and in transit, and admins can set retention so recordings are deleted after, say, ninety days.
-[02:19] Olivia Chen: I'll need our IT lead to review that. Can you send the security documentation?
-[02:24] Yash Aggarwal: Absolutely, I'll send the SOC 2 report and our security whitepaper today.
-[02:30] Olivia Chen: Great. What would a pilot look like?
-[02:34] Tom Becker: Typically thirty days with one team. I'd suggest your account management team, maybe twenty seats, with HubSpot and RingCentral connected from day one.
-[02:46] Olivia Chen: That works. Budget-wise, I have discretion up to about fifteen thousand a year before it needs to go to the CFO.
-[02:55] Yash Aggarwal: Twenty seats on the Business plan would come in under that. I'll put together a pilot proposal with pricing.
-[03:04] Olivia Chen: Please do. If the pilot works, we'd roll out to dispatch as well, that's another hundred and twenty people.
-[03:12] Tom Becker: I'll set up a technical call with your IT lead next week to walk through the integrations and SSO.
-[03:19] Olivia Chen: Perfect. Let's aim to start the pilot on the first of next month.
-[03:24] Yash Aggarwal: Sounds great. Thanks Olivia, you'll have the documents today and the proposal by Friday.
+[00:08] Olivia Chen: Sure. I run operations at Brightwave. We're about two hundred people, mostly dispatchers and account managers, and we spend a huge amount of time on calls with carriers and shippers.
+[00:21] Tom Becker: How do you capture what happens on those calls right now?
+[00:24] Olivia Chen: Honestly, badly. Account managers type notes into our CRM after the call, when they remember. Half the time the notes are two lines. When there's a dispute about a rate or a pickup window, we have nothing to go back to.
+[00:41] Yash Aggarwal: How often do those disputes come up?
+[00:44] Olivia Chen: Probably fifteen to twenty a month. Each one takes a manager a couple of hours to untangle, and some of them cost us real money in credits.
+[00:54] Tom Becker: That's a clear use case. Which calling tools are you on?
+[00:58] Olivia Chen: Mostly Microsoft Teams internally, and a lot of carriers still just phone us, so we have a dialer as well. It's RingCentral.
+[01:08] Tom Becker: Teams we support natively. For RingCentral we can ingest the call recordings through the integration, so those calls get transcribed as well.
+[01:17] Olivia Chen: That would matter a lot. Probably sixty percent of the important conversations happen on the phone.
+[01:24] Yash Aggarwal: And which CRM?
+[01:26] Olivia Chen: HubSpot. If the summary could land on the HubSpot deal automatically, my team would actually use it.
+[01:34] Tom Becker: That's exactly how the HubSpot integration works. Summary, action items and a link to the recording get logged against the contact and the deal.
+[01:42] Olivia Chen: What about security? Our shippers are sensitive about their rates being stored somewhere.
+[01:48] Yash Aggarwal: We're SOC 2 Type II, data is encrypted at rest and in transit, and admins can set retention so recordings are deleted after, say, ninety days.
+[01:57] Olivia Chen: I'll need our IT lead to review that. Can you send the security documentation?
+[02:04] Yash Aggarwal: Absolutely, I'll send the SOC 2 report and our security whitepaper today.
+[02:09] Olivia Chen: Great. What would a pilot look like?
+[02:13] Tom Becker: Typically thirty days with one team. I'd suggest your account management team, maybe twenty seats, with HubSpot and RingCentral connected from day one.
+[02:23] Olivia Chen: That works. Budget-wise, I have discretion up to about fifteen thousand a year before it needs to go to the CFO.
+[02:32] Yash Aggarwal: Twenty seats on the Business plan would come in under that. I'll put together a pilot proposal with pricing.
+[02:38] Olivia Chen: Please do. If the pilot works, we'd roll out to dispatch as well, that's another hundred and twenty people.
+[02:47] Tom Becker: I'll set up a technical call with your IT lead next week to walk through the integrations and SSO.
+[02:52] Olivia Chen: Perfect. Let's aim to start the pilot on the first of next month.
+[02:58] Yash Aggarwal: Sounds great. Thanks Olivia, you'll have the documents today and the proposal by Friday.
 """,
         "notes": {
             "overview": "Olivia Chen (Head of Operations, Brightwave Logistics, ~200 people) described poor call note-taking that leads to 15–20 rate and pickup disputes a month. Brightwave uses Microsoft Teams, RingCentral for phone calls (about 60% of important conversations) and HubSpot as its CRM. Security is a key concern. Both sides agreed on a 30-day, 20-seat pilot with the account management team starting next month, within Olivia's $15k budget authority, with a possible expansion to 120 dispatch seats.",
             "chapters": [
-                {"title": "Current process & pain", "summary": "Notes are typed into the CRM after calls, so there is no record when disputes happen (15–20/month).", "start": "00:11"},
-                {"title": "Tooling: Teams, RingCentral, HubSpot", "summary": "Phone calls matter most; HubSpot sync of summaries is the adoption driver.", "start": "01:05"},
-                {"title": "Security requirements", "summary": "SOC 2 Type II, encryption and retention controls. IT lead review needed.", "start": "01:59"},
-                {"title": "Pilot scope & budget", "summary": "30-day pilot, 20 seats, under $15k. Dispatch expansion if successful.", "start": "02:30"},
+                {"title": "Current process & pain", "summary": "Notes are typed into the CRM after calls, so there is no record when disputes happen (15–20/month).", "start": "00:08"},
+                {"title": "Tooling: Teams, RingCentral, HubSpot", "summary": "Phone calls matter most; HubSpot sync of summaries is the adoption driver.", "start": "00:54"},
+                {"title": "Security requirements", "summary": "SOC 2 Type II, encryption and retention controls. IT lead review needed.", "start": "01:42"},
+                {"title": "Pilot scope & budget", "summary": "30-day pilot, 20 seats, under $15k. Dispatch expansion if successful.", "start": "02:09"},
             ],
             "action_items": [
-                {"text": "Send the SOC 2 report and security whitepaper to Olivia", "assignee": "Yash Aggarwal", "start": "02:24"},
-                {"text": "Prepare a 20-seat Business plan pilot proposal with pricing by Friday", "assignee": "Yash Aggarwal", "start": "02:55"},
-                {"text": "Schedule a technical call with Brightwave's IT lead on integrations and SSO", "assignee": "Tom Becker", "start": "03:12"},
-                {"text": "Get the IT lead to review the security documentation", "assignee": "Olivia Chen", "start": "02:19"},
+                {"text": "Send the SOC 2 report and security whitepaper to Olivia", "assignee": "Yash Aggarwal", "start": "02:04"},
+                {"text": "Prepare a 20-seat Business plan pilot proposal with pricing by Friday", "assignee": "Yash Aggarwal", "start": "02:32"},
+                {"text": "Schedule a technical call with Brightwave's IT lead on integrations and SSO", "assignee": "Tom Becker", "start": "02:47"},
+                {"text": "Get the IT lead to review the security documentation", "assignee": "Olivia Chen", "start": "01:57"},
             ],
         },
     },
     {
         "title": "Engineering Standup",
-        "days_ago": 2, "hour": 9,
+        "audio": "engineering-standup.mp3", "days_ago": 2, "hour": 9,
         "participants": ["Daniel Kim", "Arjun Mehta", "Sofia Rossi"],
         "tags": ["engineering", "standup"],
         "transcript": """
 [00:00] Daniel Kim: Let's go around. Arjun, you want to start?
-[00:04] Arjun Mehta: Yesterday I finished the transcript search endpoint. It does a case-insensitive match across all segments and returns snippets. Today I'm adding pagination because one test account has three thousand meetings and the response was huge.
-[00:21] Daniel Kim: Any blockers?
-[00:23] Arjun Mehta: One. Search is slow on that big account, about two seconds. I think we need a full text index. I'd like to try SQLite FTS5 before we look at anything heavier.
-[00:36] Daniel Kim: Try FTS5, but timebox it to a day. If it's not clearly better, we'll talk about it at Thursday's architecture review.
-[00:44] Arjun Mehta: Will do.
-[00:46] Sofia Rossi: I'm on the player sync. Clicking a transcript line now seeks the audio, and the active line highlights while it plays. The bug from last week where the highlight jumped two lines ahead is fixed. It was an off-by-one in how we compared end times.
-[01:05] Daniel Kim: Nice. What's next for you?
-[01:08] Sofia Rossi: Auto-scroll. When you manually scroll away, we should stop following playback and show a "sync with audio" button, like Fireflies does. Otherwise the transcript fights the user.
-[01:21] Daniel Kim: Good call. How long?
-[01:24] Sofia Rossi: I should have it in review by tomorrow.
-[01:27] Daniel Kim: From me, I reviewed the action items PR and left a couple of comments. The main one is that the assignee should reference a participant, not be free text. Otherwise we can't group by owner or filter tasks by person.
-[01:42] Arjun Mehta: That's my PR, I'll fix it today.
-[01:45] Daniel Kim: Thanks. Also a reminder that the on-call rotation changes on Monday. Sofia, you're primary next week.
-[01:52] Sofia Rossi: Got it. Can someone walk me through the new alerting dashboard before then?
-[01:57] Daniel Kim: I'll do a fifteen minute walkthrough Friday afternoon.
-[02:01] Daniel Kim: That's it. Thanks everyone.
+[00:03] Arjun Mehta: Yesterday I finished the transcript search endpoint. It does a case-insensitive match across all segments and returns snippets. Today I'm adding pagination because one test account has three thousand meetings and the response was huge.
+[00:19] Daniel Kim: Any blockers?
+[00:21] Arjun Mehta: One. Search is slow on that big account, about two seconds. I think we need a full text index. I'd like to try SQLite FTS5 before we look at anything heavier.
+[00:35] Daniel Kim: Try FTS5, but timebox it to a day. If it's not clearly better, we'll talk about it at Thursday's architecture review.
+[00:43] Arjun Mehta: Will do.
+[00:45] Sofia Rossi: I'm on the player sync. Clicking a transcript line now seeks the audio, and the active line highlights while it plays. The bug from last week where the highlight jumped two lines ahead is fixed. It was an off-by-one in how we compared end times.
+[01:00] Daniel Kim: Nice. What's next for you?
+[01:03] Sofia Rossi: Auto-scroll. When you manually scroll away, we should stop following playback and show a "sync with audio" button, like Fireflies does. Otherwise the transcript fights the user.
+[01:16] Daniel Kim: Good call. How long?
+[01:19] Sofia Rossi: I should have it in review by tomorrow.
+[01:22] Daniel Kim: From me, I reviewed the action items PR and left a couple of comments. The main one is that the assignee should reference a participant, not be free text. Otherwise we can't group by owner or filter tasks by person.
+[01:37] Arjun Mehta: That's my PR, I'll fix it today.
+[01:40] Daniel Kim: Thanks. Also a reminder that the on-call rotation changes on Monday. Sofia, you're primary next week.
+[01:47] Sofia Rossi: Got it. Can someone walk me through the new alerting dashboard before then?
+[01:53] Daniel Kim: I'll do a fifteen minute walkthrough Friday afternoon.
+[01:57] Daniel Kim: That's it. Thanks everyone.
 """,
         "notes": {
             "overview": "Short standup. Arjun finished the transcript search endpoint and is adding pagination; search is slow (~2s) on very large accounts, so he will spend a day trying SQLite FTS5. Sofia fixed the playback highlight off-by-one bug and is building auto-scroll with a \"sync with audio\" button. Daniel asked for action item assignees to reference participants instead of free text. Sofia is primary on-call from Monday.",
             "chapters": [
-                {"title": "Transcript search performance", "summary": "Pagination in progress; FTS5 experiment timeboxed to one day.", "start": "00:04"},
-                {"title": "Player & transcript sync", "summary": "Highlight bug fixed; auto-scroll with a sync button is next.", "start": "00:46"},
-                {"title": "Code review & on-call", "summary": "Assignees should reference participants; on-call rotation changes Monday.", "start": "01:27"},
+                {"title": "Transcript search performance", "summary": "Pagination in progress; FTS5 experiment timeboxed to one day.", "start": "00:03"},
+                {"title": "Player & transcript sync", "summary": "Highlight bug fixed; auto-scroll with a sync button is next.", "start": "00:45"},
+                {"title": "Code review & on-call", "summary": "Assignees should reference participants; on-call rotation changes Monday.", "start": "01:22"},
             ],
             "action_items": [
-                {"text": "Add pagination to the transcript search endpoint", "assignee": "Arjun Mehta", "start": "00:04"},
-                {"text": "Timebox a one-day SQLite FTS5 experiment for search", "assignee": "Arjun Mehta", "start": "00:36"},
-                {"text": "Change action item assignee to reference a participant", "assignee": "Arjun Mehta", "start": "01:42"},
-                {"text": "Ship transcript auto-scroll with a \"sync with audio\" button for review", "assignee": "Sofia Rossi", "start": "01:24"},
-                {"text": "Run a 15-minute alerting dashboard walkthrough on Friday", "assignee": "Daniel Kim", "start": "01:57"},
+                {"text": "Add pagination to the transcript search endpoint", "assignee": "Arjun Mehta", "start": "00:03"},
+                {"text": "Timebox a one-day SQLite FTS5 experiment for search", "assignee": "Arjun Mehta", "start": "00:35"},
+                {"text": "Change action item assignee to reference a participant", "assignee": "Arjun Mehta", "start": "01:37"},
+                {"text": "Ship transcript auto-scroll with a \"sync with audio\" button for review", "assignee": "Sofia Rossi", "start": "01:19"},
+                {"text": "Run a 15-minute alerting dashboard walkthrough on Friday", "assignee": "Daniel Kim", "start": "01:53"},
             ],
         },
     },

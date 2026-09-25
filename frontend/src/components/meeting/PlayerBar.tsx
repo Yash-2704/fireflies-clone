@@ -18,7 +18,7 @@ export function PlayerBar({ player }: { player: Player }) {
         <span className="font-mono text-[13px] tabular-nums text-muted">
           <span className="text-text">{fmtTime(time)}</span> / {fmtTime(duration)}
         </span>
-        <div className="absolute left-1/2 flex -translate-x-1/2 items-center gap-4">
+        <div className="absolute left-1/2 flex -translate-x-1/2 items-center gap-4 max-sm:static max-sm:ml-auto max-sm:translate-x-0 max-sm:gap-3">
           <button onClick={() => player.setRate(RATES[(RATES.indexOf(rate) + 1) % RATES.length])}
             aria-label="Playback speed" className="w-10 text-[13px] text-muted hover:text-text">{rate}×</button>
           <button onClick={() => player.seek(time - 15)} aria-label="Back 15 seconds" className="text-muted hover:text-text">

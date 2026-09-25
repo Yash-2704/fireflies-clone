@@ -52,6 +52,8 @@ function MeetingView({ meeting, setMeeting }: { meeting: MeetingDetail; setMeeti
   const [deleting, setDeleting] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
   const [showVideo, setShowVideo] = useState(true);
+  // Phones show one column at a time: the notes, or the transcript/AskFred panel.
+  const [mobilePane, setMobilePane] = useState<"notes" | "side">("notes");
   const menuRef = useRef<HTMLDivElement>(null);
 
   // Deep link from global search: /meetings/3?t=125 opens the transcript at that moment.
@@ -141,6 +143,18 @@ function MeetingView({ meeting, setMeeting }: { meeting: MeetingDetail; setMeeti
           className={`btn-primary ${meeting.media_type === "video" ? "" : "ml-auto"}`}><Share2 size={14} /> Share</button>
       </header>
 
+      <div className="flex shrink-0 border-b border-line md:hidden print:hidden">
+        {([["notes", "Notes"], ["transcript", "Transcript"], ["askfred", "AskFred"]] as const).map(([id, label]) => {
+          const active = id === "notes" ? mobilePane === "notes" : mobilePane === "side" && tab === id;
+          return (
+            <button key={id} onClick={() => { setMobilePane(id === "notes" ? "notes" : "side"); if (id !== "notes") setTab(id); }}
+              className={`flex-1 border-b-2 py-2.5 text-[13px] ${active ? "border-primary text-primary" : "border-transparent text-muted"}`}>
+              {label}
+            </button>
+          );
+        })}
+      </div>
+
       <div className="flex min-h-0 flex-1">
         {leftOpen && (
           <aside className="hidden w-72 shrink-0 overflow-y-auto border-r border-line bg-panel lg:block print:hidden">
@@ -148,7 +162,7 @@ function MeetingView({ meeting, setMeeting }: { meeting: MeetingDetail; setMeeti
             <SmartSearchPanel meeting={meeting} filter={filter} onFilter={applyFilter} />
           </aside>
         )}
-        <section className="min-w-0 flex-1 overflow-y-auto">
+        <section className={`min-w-0 flex-1 overflow-y-auto ${mobilePane === "side" ? "max-md:hidden" : ""}`}>
           {meeting.media_url && meeting.media_type && (
             <MeetingMedia url={meeting.media_url} type={meeting.media_type} showVideo={showVideo}
               onElement={player.attachMedia} onClick={player.toggle} />
@@ -156,8 +170,8 @@ function MeetingView({ meeting, setMeeting }: { meeting: MeetingDetail; setMeeti
           <NotesPanel meeting={meeting} player={player} regenerating={regenerating} onRegenerate={regenerate}
             onActionItemsChange={(action_items) => setMeeting({ ...meeting, action_items })} />
         </section>
-        <aside className="relative flex w-[420px] shrink-0 flex-col border-l border-line bg-panel print:hidden max-md:hidden">
-          <div className="flex gap-4 border-b border-line px-4">
+        <aside className={`relative flex w-[420px] shrink-0 flex-col border-l border-line bg-panel print:hidden ${mobilePane === "notes" ? "max-md:hidden" : "max-md:w-full"}`}>
+          <div className="flex gap-4 border-b border-line px-4 max-md:hidden">
             {(["askfred", "transcript"] as const).map((t) => (
               <button key={t} onClick={() => setTab(t)}
                 className={`-mb-px border-b-2 py-3 text-[13px] ${tab === t ? "border-primary text-primary" : "border-transparent text-muted hover:text-text"}`}>
