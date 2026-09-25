@@ -14,8 +14,9 @@ from app.seed import seed
 Base.metadata.create_all(engine)
 
 # First boot on a fresh volume: load the sample meetings so the demo is usable immediately.
+# RESEED_ON_BOOT=1 resets a deployed demo to the sample data (e.g. after the seed changes).
 with SessionLocal() as _db:
-    if _db.scalar(select(User.id).limit(1)) is None:
+    if os.getenv("RESEED_ON_BOOT") == "1" or _db.scalar(select(User.id).limit(1)) is None:
         seed()
 
 app = FastAPI(title="Fireflies Clone API", version="1.0.0")
