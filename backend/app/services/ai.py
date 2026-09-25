@@ -15,6 +15,8 @@ import httpx
 log = logging.getLogger(__name__)
 
 GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
+GROQ_STT_URL = "https://api.groq.com/openai/v1/audio/transcriptions"
+STT_MODEL = "whisper-large-v3"
 MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-120b")
 _KEYS = [k.strip() for k in os.getenv("GROQ_KEYS", "").split(",") if k.strip()]
 _key_cycle = cycle(_KEYS) if _KEYS else None
@@ -53,6 +55,43 @@ def _chat(messages: list[dict], json_mode: bool = False, effort: str = "low") ->
         except httpx.HTTPError as e:
             log.warning("Groq request failed: %s", e)
     return None
+
+
+class TranscriptionError(RuntimeError):
+    pass
+
+
+def transcribe(filename: str, data: bytes) -> tuple[list[dict], float]:
+    """Speech-to-text via Groq Whisper. Returns ([{start, end, text}], duration_sec).
+    Whisper has no speaker diarization, so callers label everything "Speaker 1"."""
+    if not _KEYS:
+        raise TranscriptionError("Transcription needs a Groq API key (GROQ_KEYS)")
+    last_error = "unknown error"
+    for _ in range(len(_KEYS)):
+        try:
+            r = httpx.post(
+                GROQ_STT_URL, timeout=300,
+                headers={"Authorization": f"Bearer {next(_key_cycle)}"},
+                files={"file": (filename, data)},
+                data={"model": STT_MODEL, "response_format": "verbose_json"},
+            )
+        except httpx.HTTPError as e:
+            last_error = str(e)
+            continue
+        if r.status_code == 200:
+            body = r.json()
+            segments = [
+                {"start": s["start"], "end": s["end"], "text": s["text"].strip()}
+                for s in body.get("segments", []) if s["text"].strip()
+            ]
+            if not segments:
+                raise TranscriptionError("No speech was detected in this recording")
+            return segments, float(body.get("duration") or segments[-1]["end"])
+        last_error = r.json().get("error", {}).get("message", r.text[:200]) if r.headers.get(
+            "content-type", "").startswith("application/json") else r.text[:200]
+        if r.status_code not in (429, 500, 502, 503):
+            break  # bad file etc. — retrying with another key won't help
+    raise TranscriptionError(f"Transcription failed: {last_error}")
 
 
 NOTES_PROMPT = """You write meeting notes like Fireflies.ai. Given a transcript where each line is

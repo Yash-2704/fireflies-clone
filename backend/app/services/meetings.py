@@ -116,6 +116,7 @@ def apply_notes(db: Session, meeting: Meeting, notes: dict, source: str) -> None
 def to_list_item(m: Meeting) -> MeetingListItem:
     item = MeetingListItem.model_validate(m)
     item.overview = m.summary.overview if m.summary else None
+    item.media_url = f"/media/{m.media_path}" if m.media_path else None
     return item
 
 

@@ -1,10 +1,13 @@
+import uuid
 from datetime import datetime
+from pathlib import Path
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session, selectinload
+from starlette.concurrency import run_in_threadpool
 
-from app.db import get_db
+from app.db import MEDIA_DIR, get_db
 from app.models import Meeting, Participant, Speaker, Tag, User, meeting_participants, meeting_tags
 from app.schemas import (
     AskRequest, AskResponse, MeetingDetail, MeetingList, MeetingUpdate, SpeakerUpdate,
@@ -14,11 +17,14 @@ from app.services.meetings import (
     current_user, generate_notes, get_meeting, load_transcript, participants_by_name,
     tags_by_name, to_detail, to_list_item,
 )
-from app.services.transcript_parser import TranscriptParseError, parse_transcript
+from app.services.transcript_parser import ParsedSegment, TranscriptParseError, parse_transcript
 
 router = APIRouter(prefix="/meetings", tags=["meetings"])
 
-MAX_UPLOAD_BYTES = 2_000_000
+MAX_TRANSCRIPT_BYTES = 2_000_000
+MAX_MEDIA_BYTES = 25_000_000  # Groq Whisper's per-file limit on the free tier
+MEDIA_TYPES = {".mp3": "audio", ".m4a": "audio", ".wav": "audio", ".ogg": "audio",
+               ".mp4": "video", ".webm": "video", ".mov": "video"}
 
 
 @router.get("", response_model=MeetingList)
@@ -68,33 +74,50 @@ async def create_meeting(
     participants: str = Form("", description="Comma-separated names"),
     tags: str = Form("", description="Comma-separated tags"),
     transcript_text: str = Form(""),
-    file: UploadFile | None = File(None, description=".txt, .vtt, .srt or .json transcript"),
+    file: UploadFile | None = File(None, description="Recording (.mp3/.m4a/.wav/.mp4/.webm) or transcript (.txt/.vtt/.srt/.json)"),
     db: Session = Depends(get_db),
     user: User = Depends(current_user),
 ):
-    """Create a meeting from a pasted or uploaded transcript, then generate AI notes."""
-    filename = ""
-    if file and file.filename:
-        raw = await file.read(MAX_UPLOAD_BYTES + 1)
-        if len(raw) > MAX_UPLOAD_BYTES:
-            raise HTTPException(413, "Transcript file is larger than 2 MB")
+    """Create a meeting from a recording (transcribed with Whisper), an uploaded transcript
+    file, or pasted transcript text — then generate AI notes."""
+    filename = file.filename if file and file.filename else ""
+    ext = Path(filename).suffix.lower()
+    media_name = media_type = None
+    if ext in MEDIA_TYPES:
+        raw = await file.read(MAX_MEDIA_BYTES + 1)
+        if len(raw) > MAX_MEDIA_BYTES:
+            raise HTTPException(413, "Recordings must be 25 MB or smaller")
         try:
-            transcript_text = raw.decode("utf-8")
-        except UnicodeDecodeError:
-            raise HTTPException(422, "Transcript must be a UTF-8 text file (.txt, .vtt, .srt, .json)")
-        filename = file.filename
-    try:
-        parsed = parse_transcript(transcript_text, filename)
-    except TranscriptParseError as e:
-        raise HTTPException(422, str(e))
+            lines, _ = await run_in_threadpool(ai.transcribe, filename, raw)
+        except ai.TranscriptionError as e:
+            raise HTTPException(422, str(e))
+        parsed = [ParsedSegment("Speaker 1", l["text"], l["start"], l["end"]) for l in lines]
+        media_name, media_type = f"{uuid.uuid4().hex}{ext}", MEDIA_TYPES[ext]
+        (MEDIA_DIR / media_name).write_bytes(raw)
+    else:
+        if filename:
+            raw = await file.read(MAX_TRANSCRIPT_BYTES + 1)
+            if len(raw) > MAX_TRANSCRIPT_BYTES:
+                raise HTTPException(413, "Transcript file is larger than 2 MB")
+            try:
+                transcript_text = raw.decode("utf-8")
+            except UnicodeDecodeError:
+                raise HTTPException(422, "Unsupported file. Upload a recording (.mp3, .m4a, .wav, .mp4, .webm) "
+                                         "or a transcript (.txt, .vtt, .srt, .json)")
+        try:
+            parsed = parse_transcript(transcript_text, filename)
+        except TranscriptParseError as e:
+            raise HTTPException(422, str(e))
 
     fallback_title = filename.rsplit(".", 1)[0] if filename else "Untitled meeting"
-    meeting = Meeting(title=title.strip() or fallback_title, date=date or datetime.now(), organizer=user)
+    meeting = Meeting(title=title.strip() or fallback_title, date=date or datetime.now(), organizer=user,
+                      media_path=media_name, media_type=media_type)
     meeting.participants = participants_by_name(db, participants.split(","))
     meeting.tags = tags_by_name(db, tags.split(","))
     db.add(meeting)
     load_transcript(db, meeting, parsed)
-    generate_notes(db, meeting)
+    # Blocking LLM call: run off the event loop so other requests aren't stalled.
+    await run_in_threadpool(generate_notes, db, meeting)
     db.commit()
     return to_detail(get_meeting(db, meeting.id, user))
 
@@ -124,8 +147,12 @@ def update_meeting(
 
 @router.delete("/{meeting_id}", status_code=204)
 def delete_meeting(meeting_id: int, db: Session = Depends(get_db), user: User = Depends(current_user)):
-    db.delete(get_meeting(db, meeting_id, user))
+    meeting = get_meeting(db, meeting_id, user)
+    media = meeting.media_path
+    db.delete(meeting)
     db.commit()
+    if media:
+        (MEDIA_DIR / media).unlink(missing_ok=True)
 
 
 @router.post("/{meeting_id}/notes", response_model=MeetingDetail)

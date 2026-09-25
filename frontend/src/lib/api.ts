@@ -13,6 +13,8 @@ export type MeetingListItem = {
   participants: Participant[];
   tags: Tag[];
   overview: string | null;
+  media_url: string | null;
+  media_type: "audio" | "video" | null;
 };
 
 export type Speaker = {
@@ -64,6 +66,9 @@ export type MeetingFilters = {
   max_duration?: number;
   sort?: "recent" | "oldest";
 };
+
+/** Recordings are served by the backend, so make its relative /media URL absolute. */
+export const mediaSrc = (url: string) => `${BASE}${url}`;
 
 export class ApiError extends Error {
   constructor(public status: number, message: string) {

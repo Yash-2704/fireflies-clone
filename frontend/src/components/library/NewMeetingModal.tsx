@@ -8,10 +8,15 @@ import { Modal } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
 import { api } from "@/lib/api";
 
+const MEDIA_EXT = [".mp3", ".m4a", ".wav", ".ogg", ".mp4", ".webm", ".mov"];
+const TRANSCRIPT_EXT = [".txt", ".vtt", ".srt", ".json"];
+const MAX_MEDIA_MB = 25;
+const isMedia = (f: File) => MEDIA_EXT.some((e) => f.name.toLowerCase().endsWith(e));
+
 const EXAMPLE = `[00:00] Alice: Let's review the launch checklist.
 [00:12] Bob: Docs are done. I'll send the release notes by Friday.`;
 
-/** Create a meeting from an uploaded or pasted transcript; the backend parses it and writes notes. */
+/** Create a meeting from a recording (transcribed by the backend), a transcript file, or pasted text. */
 export function NewMeetingModal({ onClose }: { onClose: () => void }) {
   const router = useRouter();
   const toast = useToast();
@@ -25,7 +30,8 @@ export function NewMeetingModal({ onClose }: { onClose: () => void }) {
     e.preventDefault();
     const form = new FormData(e.currentTarget);
     if (mode === "upload") {
-      if (!file) return toast.error("Choose a transcript file first");
+      if (!file) return toast.error("Choose a recording or transcript first");
+      if (isMedia(file) && file.size > MAX_MEDIA_MB * 1e6) return toast.error(`Recordings must be ${MAX_MEDIA_MB} MB or smaller`);
       form.set("file", file);
     } else {
       if (!text.trim()) return toast.error("Paste a transcript first");
@@ -50,7 +56,7 @@ export function NewMeetingModal({ onClose }: { onClose: () => void }) {
           {(["upload", "paste"] as const).map((m) => (
             <button key={m} type="button" onClick={() => setMode(m)}
               className={`rounded px-3 py-1 ${mode === m ? "bg-hover text-text" : "text-muted"}`}>
-              {m === "upload" ? "Upload file" : "Paste transcript"}
+              {m === "upload" ? "Upload recording or file" : "Paste transcript"}
             </button>
           ))}
         </div>
@@ -61,9 +67,9 @@ export function NewMeetingModal({ onClose }: { onClose: () => void }) {
             onDrop={(e) => { e.preventDefault(); setFile(e.dataTransfer.files[0] ?? null); }}
             className="flex w-full flex-col items-center gap-2 rounded-lg border border-dashed border-line bg-card px-4 py-8 text-center hover:border-primary">
             <FileUp size={22} className="text-emerald-400" />
-            <span className="text-[13px] font-medium">{file ? file.name : "Drop a transcript here or click to browse"}</span>
-            <span className="text-xs text-muted">Supports .txt, .vtt, .srt, .json (max 2 MB)</span>
-            <input ref={fileInput} type="file" hidden accept=".txt,.vtt,.srt,.json"
+            <span className="text-[13px] font-medium">{file ? file.name : "Drop a recording or transcript here, or click to browse"}</span>
+            <span className="text-xs text-muted">Recordings: MP3, M4A, WAV, MP4, WEBM (max {MAX_MEDIA_MB} MB) · Transcripts: TXT, VTT, SRT, JSON</span>
+            <input ref={fileInput} type="file" hidden accept={[...MEDIA_EXT, ...TRANSCRIPT_EXT].join(",")}
               onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
           </button>
         ) : (
@@ -85,13 +91,17 @@ export function NewMeetingModal({ onClose }: { onClose: () => void }) {
             <input name="tags" className="input mt-1" placeholder="e.g. sales, weekly" />
           </label>
         </div>
-        <p className="text-xs text-faint">Speakers found in the transcript are added as participants automatically.</p>
+        <p className="text-xs text-faint">
+          {file && mode === "upload" && isMedia(file)
+            ? "The recording is transcribed with Whisper. Speakers start as “Speaker 1” — rename them from the transcript."
+            : "Speakers found in the transcript are added as participants automatically."}
+        </p>
 
         <div className="flex justify-end gap-2">
           <button type="button" onClick={onClose} disabled={busy} className="btn-ghost">Cancel</button>
           <button type="submit" disabled={busy} className="btn-primary">
             {busy && <Loader2 size={14} className="animate-spin" />}
-            {busy ? "Generating notes…" : "Create meeting"}
+            {busy ? (mode === "upload" && file && isMedia(file) ? "Transcribing & writing notes…" : "Generating notes…") : "Create meeting"}
           </button>
         </div>
       </form>

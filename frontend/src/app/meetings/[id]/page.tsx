@@ -1,12 +1,13 @@
 "use client";
 
-import { Download, FileText, Info, Link2, MoreHorizontal, PanelLeftClose, PanelLeftOpen, Printer, RefreshCw, Share2, Trash2 } from "lucide-react";
+import { Download, FileText, Video, Info, Link2, MoreHorizontal, PanelLeftClose, PanelLeftOpen, Printer, RefreshCw, Share2, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
 
 import { EditMeetingModal } from "@/components/library/EditMeetingModal";
 import { AskFredPanel } from "@/components/meeting/AskFredPanel";
+import { MeetingMedia } from "@/components/meeting/MeetingMedia";
 import { NotesPanel } from "@/components/meeting/NotesPanel";
 import { PlayerBar } from "@/components/meeting/PlayerBar";
 import { SmartSearchPanel } from "@/components/meeting/SmartSearchPanel";
@@ -50,6 +51,7 @@ function MeetingView({ meeting, setMeeting }: { meeting: MeetingDetail; setMeeti
   const [editing, setEditing] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
+  const [showVideo, setShowVideo] = useState(true);
   const menuRef = useRef<HTMLDivElement>(null);
 
   // Deep link from global search: /meetings/3?t=125 opens the transcript at that moment.
@@ -130,8 +132,13 @@ function MeetingView({ meeting, setMeeting }: { meeting: MeetingDetail; setMeeti
             </div>
           )}
         </div>
+        {meeting.media_type === "video" && (
+          <button onClick={() => setShowVideo(!showVideo)} className={`btn-ghost ml-auto ${showVideo ? "border-primary" : ""}`}>
+            <Video size={14} /> Video
+          </button>
+        )}
         <button onClick={() => navigator.clipboard.writeText(location.href).then(() => toast.success("Link copied — sharing with teammates is coming soon"))}
-          className="btn-primary ml-auto"><Share2 size={14} /> Share</button>
+          className={`btn-primary ${meeting.media_type === "video" ? "" : "ml-auto"}`}><Share2 size={14} /> Share</button>
       </header>
 
       <div className="flex min-h-0 flex-1">
@@ -142,6 +149,10 @@ function MeetingView({ meeting, setMeeting }: { meeting: MeetingDetail; setMeeti
           </aside>
         )}
         <section className="min-w-0 flex-1 overflow-y-auto">
+          {meeting.media_url && meeting.media_type && (
+            <MeetingMedia url={meeting.media_url} type={meeting.media_type} showVideo={showVideo}
+              onElement={player.attachMedia} onClick={player.toggle} />
+          )}
           <NotesPanel meeting={meeting} player={player} regenerating={regenerating} onRegenerate={regenerate}
             onActionItemsChange={(action_items) => setMeeting({ ...meeting, action_items })} />
         </section>

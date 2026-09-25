@@ -4,8 +4,10 @@ from pathlib import Path
 from sqlalchemy import create_engine, event
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
-DATA_DIR = Path(__file__).resolve().parent.parent / "data"
-DATA_DIR.mkdir(exist_ok=True)
+# DATA_DIR holds the SQLite file and uploaded recordings; on Railway it points at a volume.
+DATA_DIR = Path(os.getenv("DATA_DIR", Path(__file__).resolve().parent.parent / "data"))
+MEDIA_DIR = DATA_DIR / "media"
+MEDIA_DIR.mkdir(parents=True, exist_ok=True)
 DATABASE_URL = os.getenv("DATABASE_URL", f"sqlite:///{DATA_DIR / 'fireflies.db'}")
 
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})

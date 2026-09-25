@@ -33,6 +33,8 @@ class MeetingListItem(ORM):
     participants: list[ParticipantOut]
     tags: list[TagOut]
     overview: str | None = None
+    media_url: str | None = None
+    media_type: str | None = None
 
 
 class MeetingList(BaseModel):

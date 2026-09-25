@@ -61,6 +61,9 @@ class Meeting(Base):
     date: Mapped[datetime] = mapped_column(DateTime, index=True)
     duration_sec: Mapped[int] = mapped_column(Integer, default=0)
     organizer_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    # Recording file name inside MEDIA_DIR (null for meetings created from a transcript only).
+    media_path: Mapped[str | None] = mapped_column(String(255))
+    media_type: Mapped[str | None] = mapped_column(String(10))  # "audio" | "video"
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, onupdate=utcnow)
 

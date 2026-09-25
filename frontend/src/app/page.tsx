@@ -32,7 +32,7 @@ export default function HomePage() {
 
   const quickStart = [
     { label: "Schedule Meeting", icon: Calendar, tint: "bg-[#3a1a22] text-[#f08aa4]", run: () => toast.success("Calendar integration is coming soon") },
-    { label: "Upload Transcript", icon: Upload, tint: "bg-[#15302a] text-[#6fd3a8]", run: () => setCreating(true) },
+    { label: "Upload File", icon: Upload, tint: "bg-[#15302a] text-[#6fd3a8]", run: () => setCreating(true) },
     { label: "Capture Meeting", icon: Plus, tint: "bg-[#241c42] text-[#a996ff]", run: () => router.push("/live") },
   ];
 

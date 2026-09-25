@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowDownUp, Hash, LayoutList, Search, Video } from "lucide-react";
+import { ArrowDownUp, Hash, LayoutList, Search, Upload, Video } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { EditMeetingModal } from "@/components/library/EditMeetingModal";
@@ -91,6 +91,7 @@ export default function MeetingsPage() {
               className="btn-ghost ml-auto">
               <ArrowDownUp size={14} /> {filters.sort === "oldest" ? "Oldest first" : "Most recent"}
             </button>
+            <button onClick={() => setCreating(true)} className="btn-primary"><Upload size={14} /> Upload</button>
           </div>
 
           <div className="flex-1 overflow-y-auto px-5 py-4">
