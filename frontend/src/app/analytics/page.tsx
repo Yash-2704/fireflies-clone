@@ -277,7 +277,7 @@ function AnalyticsFilterMenu({ people, setPeople, tag, setTag }: {
       {open && (
         <div className="absolute right-0 top-10 z-40 w-72 rounded-lg border border-line bg-panel p-3 shadow-2xl">
           <p className="mb-1.5 text-xs text-faint">Channel</p>
-          <select value={tag ?? ""} onChange={(e) => setTag(e.target.value || undefined)} className="input mb-3 py-1.5">
+          <select value={tag ?? ""} onChange={(e) => setTag(e.target.value || undefined)} aria-label="Channel" className="input mb-3 py-1.5">
             <option value="">All meetings</option>
             {tags.map((t) => <option key={t.id} value={t.name}>#{t.name}</option>)}
           </select>

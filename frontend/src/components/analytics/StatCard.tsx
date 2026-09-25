@@ -45,7 +45,8 @@ export function InfoTip({ text }: { text: string }) {
   return (
     <span className="relative" onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
       <button type="button" aria-label="What is this?" aria-describedby={open ? id : undefined} aria-expanded={open}
-        onFocus={() => setOpen(true)} onBlur={() => setOpen(false)} onClick={() => setOpen((o) => !o)}
+        onFocus={() => setOpen(true)} onBlur={() => setOpen(false)} onClick={() => setOpen(true)}
+        onKeyDown={(e) => e.key === "Escape" && setOpen(false)}
         className={`rounded ${open ? "text-text" : "text-faint"} hover:text-text`}>
         <Info size={14} />
       </button>

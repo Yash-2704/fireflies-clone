@@ -1,197 +1,266 @@
 # Fireflies.ai Clone — Meeting Notes & Transcription
 
-**Live demo:** https://frontend-production-013d.up.railway.app · **API:** https://backend-production-1f14.up.railway.app/docs
+A full-stack clone of the Fireflies.ai meeting workspace. You can browse a meetings library, play
+recordings with an interactive transcript that stays in sync, read AI notes (overview, timestamped
+outline, action items), ask AskFred about one meeting or all of them, clip soundbites, comment,
+bookmark, and see team analytics.
 
-A full-stack clone of the Fireflies.ai meeting workspace: a meetings library, an interactive
-transcript synced to a player, AI-generated notes (overview, timestamped outline, action items),
-AskFred Q&A, global search and task tracking.
-
-| Layer | Stack |
+| | |
 |---|---|
-| Frontend | Next.js 16 (App Router, TypeScript), Tailwind CSS v4, lucide-react |
-| Backend | Python, FastAPI, SQLAlchemy 2, Pydantic v2 |
-| Database | SQLite |
-| AI | Groq API — `openai/gpt-oss-120b` for notes/AskFred (reliable strict-JSON output), `whisper-large-v3` for transcribing uploaded recordings, with an offline fallback for notes |
-| Hosting | Railway (two services; SQLite + recordings on a persistent volume) |
+| **Live app** | https://frontend-production-013d.up.railway.app |
+| **API** | https://backend-production-1f14.up.railway.app (interactive docs at [`/docs`](https://backend-production-1f14.up.railway.app/docs)) |
+| **Source** | https://github.com/Yash-2704/fireflies-clone |
 
-## Setup
+The demo opens with six sample meetings, and each one has real multi-voice audio. They also come
+with notes, action items, soundbites, comments, bookmarks and topic trackers, so every feature is
+visible straight away.
 
-**Backend** (Python 3.11+)
+---
 
-```bash
-cd backend
-python3 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-cp .env.example .env          # add your GROQ_KEYS (comma-separated); optional
-python -m app.seed            # creates data/fireflies.db with 6 sample meetings
-uvicorn app.main:app --reload --port 8000
-```
+## Feature status
 
-API docs: http://localhost:8000/docs · Tests: `pytest`
+### ✅ Live and working
 
-**Frontend** (Node 20+)
+**Meetings library**
+- Meetings grouped by day, each showing title, date, duration, organizer, participants and tags.
+- Search by title or participant. The Filters menu covers participants, date range, duration and tags.
+- Sort by most recent or oldest. Tags also appear as channels in the sidebar.
+- Row menu with Copy link, Download notes (Markdown), Rename / edit, and Delete (with confirmation).
 
-```bash
-cd frontend
-cp .env.example .env.local    # NEXT_PUBLIC_API_URL=http://localhost:8000
-npm install
-npm run dev                   # http://localhost:3000
-```
+**Creating meetings**
+- **Upload:** audio or video (MP3, M4A, WAV, MP4, WEBM, up to 100 MB).
+  - The server extracts the speech audio with ffmpeg, and Groq Whisper transcribes it with timestamps.
+  - Transcript files (TXT, VTT, SRT, JSON) are parsed with their timestamps kept.
+- **Paste a transcript:** a form with title, transcript, participants, date and tags.
+- After either one, the LLM writes the overview, a timestamped outline and action items with owners.
 
-Without Groq keys everything still works: new notes and AskFred answers come from a heuristic
-fallback, and the UI labels them "Auto-generated (AI offline)".
+**Meeting page** (three columns, like Fireflies)
+- Real audio or video playback. The player bar has play/pause, ±15 s, 0.75×–3× speed and a seek bar.
+- **Transcript and player stay in sync.** Clicking any line, outline entry, action item, comment,
+  bookmark or AskFred citation jumps the player there. During playback the active line is
+  highlighted and scrolled into view, and a "Sync with audio" button appears if you scroll away.
+- Find in transcript, with highlighted matches, an "n of N" counter and ↑/↓.
+- Rename speakers (for example "Speaker 1" → a real name, who is then added as a participant),
+  edit a transcript line, and copy a link to any moment.
+- **Notes:** overview, outline with timestamps, and action items grouped by owner. Action items can
+  be edited inline, reassigned, completed, added and deleted. Notes can be regenerated with AI.
+- **Smart Search panel:**
+  - AI filters (Questions, Tasks, Metrics, Dates & Times).
+  - Topic tracker mention counts.
+  - Speaker talk time (share and words per minute). Clicking any of these filters the transcript.
+- **Soundbites:** select transcript text and choose "Create soundbite". Playing one plays only that clip.
+- **Comments:** on any transcript line, either from the selection toolbar or the Comments panel.
+- **Bookmarks:** Important / Action item / Positive / Negative. Add them from the player bar (at the
+  current moment) or from a text selection. They can be filtered in the Bookmarks panel.
+- **AskFred:** chat about the meeting, with clickable timestamp citations, copy and 👍/👎 on answers,
+  and quick prompts.
+- Share dialog with a copyable link, optionally starting at the current moment. Inline title rename.
+- Export notes as Markdown or the transcript as TXT, or print / save as PDF.
 
-## Features
+**Across the workspace**
+- **AskFred across meetings** on Home, and in the library limited to the selected channel. Cited
+  meetings are linked.
+- **Global search (⌘K / Ctrl+K)** over meeting titles and transcript lines. Results jump to the exact moment.
+- **Tasks:** every action item across meetings, with Open / Completed / All tabs.
+- **Analytics → Team Insights:**
+  - Metrics: conversations, time in conversations, questions asked, filler words, monologues,
+    longest monologue, your talk-to-listen ratio, words per minute, and silence.
+  - Each metric shows ▲/▼ against the previous period of the same length.
+  - A per-day chart (hover for details, or switch to a table), a speakers table, and CSV export.
+  - Date range can be Today / 7 days / 30 days / custom, filtered by channel and participants.
+  - Each card's ⓘ explains how the metric is measured.
+- **Analytics → Topic Insights:** topic trackers (keyword sets) showing conversations and mentions
+  per keyword. Clicking a keyword opens search. Trackers can be created and deleted.
+- **Home:** time-of-day greeting, assistant cards, Recent / Upcoming / My Tasks tabs, and AskFred.
+- **Notifications** built from real events (notes ready, your open action items), with unread state.
+- **Profile menu:** a light/dark theme toggle (dark by default, like Fireflies) and a Settings link.
+- Toasts for every action, keyboard-accessible menus, and responsive layouts (tablet: panels open as
+  overlays; phone: tabs).
 
-- **Meetings library** — grouped by day, search by title/participant, Filters popover
-  (participants, date range, duration, tags), sort by recency, tags shown as channels.
-- **Meeting detail** — three columns like Fireflies:
-  - *Smart Search*: AI filter chips (Questions, Tasks, Metrics, Dates) and speaker talk-time
-    (talk %, words per minute). Clicking one filters the transcript.
-  - *Notes*: overview, outline with clickable timestamps, action items grouped by owner.
-  - *Transcript / AskFred* tabs.
-  - A player bar pinned to the bottom (play/pause, ±15s, speed, seek).
-- **Transcript ↔ player sync** — click a line, outline entry, action item or AskFred citation to
-  seek; during playback the active line highlights and auto-scrolls. Scrolling away shows
-  "Sync with audio".
-- **Find in transcript** — highlighted matches with an "n of N" counter and ↑/↓ (Enter / Shift+Enter).
-- **Upload recordings** — MP3, M4A, WAV, MP4, WEBM (≤ 25 MB) are transcribed with Groq Whisper into
-  timestamped segments, then notes are generated. Whisper has no speaker diarization, so lines start
-  as "Speaker 1" (as in Fireflies) and can be renamed. Video recordings play inline.
-- **Sample meetings have real audio** — generated once with Groq Orpheus TTS (a consistent voice per
-  speaker) by `backend/scripts/make_seed_audio.py`, which also rebuilt the seed timestamps from the
-  real clip lengths so transcript and audio stay in sync.
-- **CRUD** — create a meeting two ways: **Upload** (just pick a recording or a .txt/.vtt/.srt/.json transcript — title comes from the file name) or **Capture → Paste a transcript** (a form with title, transcript, participants, date, tags); edit
-  title/participants/tags; delete; add, edit inline, reassign, complete and delete action items;
-  rename speakers ("Speaker 1" → a real name, linked as a participant); regenerate notes.
-- **AskFred** — chat about a meeting (Groq), with clickable timestamp citations, copy and 👍/👎 on answers,
-  and quick-ask chips. **Across meetings** too: on Home and in the library (scoped to the selected
-  channel), answering from recent meetings' summaries and action items, with links to cited meetings.
-- **Soundbites, comments and bookmarks** — the ✂ 💬 🔖 icons in the meeting page's left rail open each panel (an overlay on narrower screens; a "Highlights" tab on phones). Select transcript text to get a toolbar (Create soundbite ·
-  Comment · Bookmark · Copy). Left mini-rail panels list soundbites (plays just that clip), comments
-  (quoting their line) and typed bookmarks (Important / Action item / Positive / Negative, filterable).
-  The player bar has one-click ☆ ☑ 👍 👎 bookmarks and timeline ticks.
-- **Transcript tools** — edit a line (fix Whisper mistakes), copy a link to a moment (`?t=`), rename speakers.
-- **Shell** — profile menu (theme toggle), notifications built from real events (notes ready, your open
-  action items) with unread state, and a Capture menu (upload, paste, schedule, live).
-- **Global search (⌘K)** — titles and transcript lines, jumping straight to the moment.
-- **Tasks page** — every action item across meetings, with open/completed filters.
-- **Export** — notes as Markdown, transcript as TXT (re-importable), or print/save as PDF.
-- **Analytics** — *Team Insights* for Today / last 7 / last 30 days / a custom range, filterable by
-  channel and participants, each metric with ▲/▼ vs the previous period of equal length:
-  conversations, time in conversations, questions asked, filler words, monologues (≥30s uninterrupted),
-  longest monologue, your talk-to-listen ratio, words per minute, silence (gaps ≥1s), a per-day chart
-  (hover tooltips + table view), a speakers table, and CSV export. *Topic Insights* tracks keyword
-  sets (topic trackers) across meetings — conversations and mentions per keyword; clicking a keyword
-  opens search. Meeting pages show each tracker's mentions and filter the transcript to them.
-  Everything is computed from transcript segments at request time, so renames and edits are reflected immediately.
-- **Dark theme by default** (like Fireflies), light theme in Settings. Toasts for every action.
-- Placeholders ("Coming soon"): live capture bot, integrations, team, analytics, AI skills,
-  voice agents, and recording settings.
+### 🕒 Coming soon (placeholders that say so)
+
+| Area | What happens today |
+|---|---|
+| Live capture: a notetaker bot joining Zoom / Meet / Teams | "Coming soon" page (Capture → Add to live meeting) |
+| Calendar sync and scheduling | Capture → Schedule shows a coming-soon toast; the Home "Upcoming" tab explains it |
+| Integrations (Zoom, Google Meet, calendar, CRM) | "Coming soon" page |
+| Team and sharing with teammates | The Share dialog's invite box and the Team page are placeholders (link sharing works) |
+| AI Skills and Voice Agents | "Coming soon" pages |
+| Recording settings (auto-record, language, retention, email recaps) | Settings rows marked "Coming soon" (the theme setting works) |
+| Authentication | Everyone uses a default demo user; "Log out" explains this |
+
+---
+
+## Tech stack
+
+| Layer | Technology |
+|---|---|
+| Frontend | Next.js 16 (App Router, TypeScript), Tailwind CSS v4, lucide-react icons |
+| Backend | Python 3.12, FastAPI, SQLAlchemy 2, Pydantic v2, Uvicorn |
+| Database | SQLite, with recordings stored alongside it |
+| AI | Groq: `openai/gpt-oss-120b` (notes and AskFred, JSON mode) and `whisper-large-v3` (speech-to-text) |
+| Media | ffmpeg (extracts compact speech audio from uploads before transcription) |
+| Hosting | Railway: two services, with the SQLite database and recordings on a persistent volume |
 
 ## Architecture
 
 ```
-frontend (Next.js, client components)            backend (FastAPI)
-  app/ pages ──► lib/api.ts (typed fetch) ──HTTP──► routers/   meetings · action_items · search
-  components/                                        services/  meetings  (build/serialize, speaker stats)
-    shell/    rail, top bar, ⌘K search                          transcript_parser (txt/vtt/srt/json)
-    library/  rows, filters, create/edit modals                 ai (Groq client + heuristic fallback)
-    meeting/  notes, transcript, AskFred, player      models.py (SQLAlchemy) ─► SQLite
+Next.js (client components)                       FastAPI
+  app/ pages                                        routers/
+  components/                                         meetings       list · CRUD · upload · notes · ask
+    shell/     rail, top bar, search, menus           action_items   tasks
+    library/   rows, filters, upload/create modals    annotations    comments · soundbites · bookmarks · line edits
+    meeting/   notes, transcript, AskFred,            analytics      team insights · topic insights · topics
+               player, annotation panels              search         global search · workspace ask · notifications
+    analytics/ stat cards, chart, topics            services/
+  lib/api.ts   typed fetch client ───── HTTP ────▶    transcript_parser   txt / vtt / srt / json → timed segments
+                                                      ai                  Groq notes, Q&A, Whisper; offline fallback
+                                                      analytics           metrics from segments
+                                                      meetings            build, serialize, speaker stats
+                                                    models.py (SQLAlchemy) ──▶ SQLite  +  media/ (recordings)
 ```
 
-- **The backend owns ingestion.** Uploaded and pasted transcripts are parsed server-side into timed
-  segments. Speakers are created, and speakers with real names are added as participants. Notes are
-  then generated in the same request.
-- **Notes generation.** One Groq call in JSON mode returns `{overview, chapters[], action_items[]}`,
-  each item with an `mm:ss` start taken from real transcript lines. Groq keys are rotated on
-  rate limits and errors. If every key fails, a deterministic heuristic produces notes instead,
-  and `summaries.source` records which path was used.
-- **Player.** One `<audio>`/`<video>` element per meeting drives time (seek, speed, ±15s, transcript
-  sync). The backend serves recordings with HTTP Range support, so seeking works. Meetings created
-  from pasted text have no media, so the same player API falls back to a clock over the transcript timeline.
-- **Auth** is a placeholder, per the brief. Every request acts as the seeded default user, and
-  every query is scoped to `organizer_id`, so real auth can later replace one dependency
-  (`current_user`).
+- **The backend owns ingestion.** An upload is streamed to disk, its speech audio is extracted,
+  and Whisper returns timestamped segments. Transcript files are parsed instead. The backend then
+  creates speakers and segments and generates the notes, all in one request.
+- **Notes** come from a single Groq call in JSON mode: overview, chapters and action items, each
+  with an `mm:ss` start taken from real lines. Keys are rotated when one hits a rate limit. If the
+  AI is unavailable, a deterministic fallback writes basic notes, and `summaries.source` records
+  which path was used (`ai`, `heuristic` or `seed`).
+- **Playback.** One `<audio>`/`<video>` element per meeting drives time, and the backend serves
+  recordings with HTTP Range support so seeking works. Meetings created from pasted text have no
+  media, so the same player falls back to a clock over the transcript timeline.
+- **Analytics** are calculated from transcript segments on every request, so speaker renames and
+  transcript edits show up immediately.
+- **Auth** is a placeholder. Every route resolves a default user through one dependency
+  (`current_user`), and every query is limited to that user's meetings, so real auth only needs to
+  replace that dependency.
 
 ## Database schema
 
 ```
 users 1─N meetings N─M participants   (meeting_participants)
                    N─M tags           (meeting_tags)
-          meetings 1─N speakers ─N:1 participants (nullable)
-          meetings 1─N segments  N─1 speakers
-          meetings 1─1 summaries
-          meetings 1─N chapters
-          meetings 1─N action_items ─N:1 participants (assignee, nullable)
-          meetings 1─N soundbites, bookmarks
-          segments 1─N comments
+      1─N topic_trackers
+meetings 1─N speakers ─N:1 participants (nullable)
+         1─N segments N─1 speakers      segments 1─N comments
+         1─1 summaries
+         1─N chapters
+         1─N action_items ─N:1 participants (assignee, nullable)
+         1─N soundbites
+         1─N bookmarks
 ```
 
-| Table | Key columns | Why |
+| Table | Key columns | Purpose |
 |---|---|---|
-| users | name, email | The organizer. Meetings are scoped to it. |
-| participants | name (unique), email | Shared across meetings, which enables filtering by attendee. |
-| meetings | title, date (indexed), duration_sec, organizer_id, media_path?, media_type? | Library list, sort and filters. media_* point at the recording (null for text-only meetings). |
-| speakers | meeting_id, name, participant_id? | A voice in one transcript. Unique per meeting. Renaming links it to a participant. |
-| segments | meeting_id, speaker_id, position, start_sec, end_sec, text | Transcript lines. The times drive seeking, highlighting and talk-time. |
-| summaries | meeting_id (PK), overview, source, generated_at | 1:1 with a meeting. `source` = seed/ai/heuristic. |
-| chapters | meeting_id, position, title, summary, start_sec | Outline entries that jump to where each topic starts. |
-| action_items | meeting_id, text, assignee_id?, is_completed, start_sec? | Tasks. `start_sec` = where the task was said (null if added manually). |
-| tags / meeting_tags | name | Labels and channels for filtering. |
-| comments | segment_id, body, created_at | A discussion note pinned to a transcript line (deleted with the line/meeting). |
-| soundbites | meeting_id, title, start_sec, end_sec | A named clip; the player plays just that range. |
-| bookmarks | meeting_id, kind, at_sec | One-click markers: important / action / positive / negative. |
-| topic_trackers | owner_id, name, keywords | Keyword sets tracked across meetings (comma-separated; always read together). |
+| `users` | name, email | The workspace owner. All data is limited to this user. |
+| `participants` | name (unique), email | People, shared across meetings, which enables filtering by attendee. |
+| `meetings` | title, date (indexed), duration_sec, organizer_id, media_path?, media_type? | A meeting. `media_*` point to the recording (null for pasted transcripts). |
+| `meeting_participants`, `meeting_tags` | join tables | Many-to-many links. |
+| `tags` | name (unique) | Labels, shown as channels. |
+| `speakers` | meeting_id, name, participant_id? | A voice in one transcript. Unique per meeting. Renaming links it to a participant. |
+| `segments` | meeting_id, speaker_id, position, start_sec, end_sec, text | Transcript lines. The times drive seeking, highlighting and analytics. |
+| `summaries` | meeting_id (PK), overview, source, generated_at | 1:1 AI overview, recording where it came from. |
+| `chapters` | meeting_id, position, title, summary, start_sec | Outline entries that jump the player. |
+| `action_items` | meeting_id, text, assignee_id?, is_completed, start_sec? | Tasks. `start_sec` is where the task was said (null if added by hand). |
+| `comments` | segment_id, body, created_at | A comment pinned to a transcript line. |
+| `soundbites` | meeting_id, title, start_sec, end_sec | A named clip. |
+| `bookmarks` | meeting_id, kind, at_sec | important / action / positive / negative. |
+| `topic_trackers` | owner_id, name, keywords | Keyword sets tracked across meetings. |
 
-Every child table uses `ON DELETE CASCADE` (with SQLite foreign keys enabled), so deleting a
-meeting removes its whole tree. Talk-time and words per minute are **derived** from segments when
-a meeting is read, not stored, so they can never go stale after a speaker is renamed.
+Foreign keys are enforced (SQLite `PRAGMA foreign_keys=ON`), and child rows use `ON DELETE CASCADE`,
+so deleting a meeting removes its whole tree. The recording file is deleted too. Talk time, words per
+minute and every analytics metric are **derived** from segments rather than stored, so they can't go stale.
 
-## API
+## API overview
+
+All routes are under `/api`. The full interactive reference is at [`/docs`](https://backend-production-1f14.up.railway.app/docs).
 
 | Method | Path | Purpose |
 |---|---|---|
-| GET | `/api/meetings?q=&participant_id=&tag=&date_from=&date_to=&min_duration=&max_duration=&sort=recent\|oldest` | List and filter meetings |
-| POST | `/api/meetings` (multipart: `title, date, participants, tags, transcript_text \| file`) | Create from a recording (Whisper) or transcript, then generate notes |
+| GET | `/meetings?q=&participant_id=&tag=&date_from=&date_to=&min_duration=&max_duration=&sort=` | List and filter meetings |
+| POST | `/meetings` (multipart: `file` or `transcript_text`, plus `title, date, participants, tags`) | Create from a recording, a transcript file or pasted text, then generate notes |
+| GET / PATCH / DELETE | `/meetings/{id}` | Full detail / edit title, date, participants, tags / delete |
+| POST | `/meetings/{id}/notes` | Regenerate AI notes |
+| PATCH | `/meetings/{id}/speakers/{speaker_id}` | Rename a speaker |
+| POST | `/meetings/{id}/ask` | AskFred about one meeting |
+| POST | `/ask` | AskFred across meetings (optional `tag`) |
+| POST / PATCH / DELETE | `/meetings/{id}/action-items`, `/action-items/{id}` | Action items |
+| GET | `/action-items?status=open\|done\|all` | Tasks across meetings |
+| POST / DELETE | `/meetings/{id}/comments`, `/comments/{id}` | Comments on transcript lines |
+| POST / DELETE | `/meetings/{id}/soundbites`, `/soundbites/{id}` | Soundbites |
+| POST / DELETE | `/meetings/{id}/bookmarks`, `/bookmarks/{id}` | Bookmarks |
+| PATCH | `/segments/{id}` | Edit a transcript line |
+| GET | `/analytics/team`, `/analytics/topics` (date, participant and tag filters) | Team and Topic Insights |
+| GET / POST / DELETE | `/topics`, `/topics/{id}` | Topic trackers |
+| GET | `/search?q=` | Search titles and transcripts |
+| GET | `/notifications`, `/participants`, `/tags`, `/me` | Activity feed and lookups |
 | GET | `/media/{file}` | Recording file (Range requests supported) |
-| GET / PATCH / DELETE | `/api/meetings/{id}` | Detail (speakers with stats, segments, summary, chapters, action items) / edit / delete |
-| POST | `/api/meetings/{id}/notes` | Regenerate notes |
-| PATCH | `/api/meetings/{id}/speakers/{speaker_id}` | Rename a speaker |
-| POST | `/api/meetings/{id}/ask` | AskFred `{question, history}` |
-| POST | `/api/meetings/{id}/action-items` | Add an action item |
-| PATCH / DELETE | `/api/action-items/{id}` | Edit / complete / reassign / delete |
-| GET | `/api/action-items?status=open\|done\|all` | Tasks across meetings |
-| GET | `/api/search?q=` | Global search (titles and transcript lines, with timestamps) |
-| POST | `/api/ask` `{question, history, tag?}` | AskFred across recent meetings (optionally one channel/tag) |
-| GET | `/api/notifications` | Activity feed derived from meetings and open action items |
-| POST / DELETE | `/api/meetings/{id}/comments`, `/api/comments/{id}` | Comment on a transcript line |
-| POST / DELETE | `/api/meetings/{id}/soundbites`, `/api/soundbites/{id}` | Create / delete a clip |
-| POST / DELETE | `/api/meetings/{id}/bookmarks`, `/api/bookmarks/{id}` | Add / remove a bookmark |
-| PATCH | `/api/segments/{id}` | Edit a transcript line's text |
-| GET | `/api/analytics/team?date_from=&date_to=&participant_id=&tag=` | Team Insights for a period + previous period + per-day series + speakers |
-| GET | `/api/analytics/topics?…same filters` | Topic Insights: conversations and mentions per tracker keyword |
-| GET / POST / DELETE | `/api/topics`, `/api/topics/{id}` | Manage topic trackers |
-| GET | `/api/participants`, `/api/tags`, `/api/me` | Filter options, current user |
 
-## Deployment (Railway)
+## Setup
 
-Two services from this repo. `backend/` (Railpack, start command in `railpack.json`) has a volume
-mounted at `/data` with `DATA_DIR=/data`, `GROQ_KEYS` and `CORS_ORIGINS=<frontend URL>`.
-`frontend/` has `NEXT_PUBLIC_API_URL=<backend URL>`, which is set at build time. On first boot the
-backend seeds the sample meetings (it never reseeds a database that already has data).
+**Requirements:** Python 3.12, Node.js 20+, ffmpeg (for audio/video uploads), and a Groq API key
+(optional; without one, notes and AskFred use a basic offline fallback, but recordings can't be transcribed).
+
+**Backend** (from `backend/`):
+
+```bash
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env          # set GROQ_KEYS (comma-separated keys) and CORS_ORIGINS (the frontend's URL)
+python -m app.seed            # sample meetings, audio and annotations
+uvicorn app.main:app --port 8000
+pytest                        # 11 API tests
+```
+
+**Frontend** (from `frontend/`):
+
+```bash
+npm install
+cp .env.example .env.local    # set NEXT_PUBLIC_API_URL to the backend's URL
+npm run dev                   # or: npm run build && npm start
+```
+
+**Environment variables**
+
+| Service | Variable | Meaning |
+|---|---|---|
+| backend | `GROQ_KEYS` | Comma-separated Groq API keys (rotated on rate limits) |
+| backend | `GROQ_MODEL` | Defaults to `openai/gpt-oss-120b` |
+| backend | `CORS_ORIGINS` | Allowed frontend origin(s), comma-separated |
+| backend | `DATA_DIR` | Where the SQLite file and recordings live (a volume in production) |
+| backend | `RESEED_ON_BOOT` | Set to `1` for one deploy to reset a hosted demo to the sample data |
+| frontend | `NEXT_PUBLIC_API_URL` | The backend's public URL (read at build time) |
+
+**Deployment (Railway):** two services built from this repo with Railpack. `backend/railpack.json`
+installs ffmpeg and sets the start command, and the backend has a volume mounted at `/data`
+(`DATA_DIR=/data`). On first boot with an empty volume, the backend seeds the sample data itself.
 
 ```bash
 railway up ./backend --path-as-root --service backend
 railway up ./frontend --path-as-root --service frontend
 ```
 
+The sample audio was generated once with Groq Orpheus text-to-speech (a consistent voice per
+speaker) by `backend/scripts/make_seed_audio.py`. That script also rebuilt the transcript and note
+timestamps from the real clip lengths, so audio and transcript stay aligned.
+
 ## Assumptions
 
-- Live recording and a bot that joins calls are out of scope. Recordings are uploaded, and Whisper
-  transcribes them without speaker separation.
-- A transcript line without a timestamp gets an estimated one (about 150 words per minute), so
-  every line can still be seeked.
-- Very long transcripts are truncated to about 18k characters before the LLM call, because of
-  Groq's free-tier tokens-per-minute limit.
-- There is one default user (auth is out of scope).
+- **Authentication** is out of scope. The app acts as a single default user, and every query is
+  limited to that user, so real auth can be added later.
+- **Live recording** isn't included. Recordings are uploaded, and Whisper transcribes them **without
+  telling speakers apart**, so uploaded recordings start as "Speaker 1" and can be renamed (Fireflies
+  does the same).
+- **Transcript lines without timestamps** (pasted text) get estimated times (about 150 words per
+  minute), so every line can still be seeked.
+- **Long meetings.** The notes prompt is capped at about 18k characters of transcript, because of
+  Groq's free-tier limit on tokens per minute.
+- **Metric definitions:**
+  - a monologue is 30 s or more by one speaker without interruption;
+  - silence is a gap of 1 s or more between lines;
+  - a question is a "?" in a line;
+  - filler words come from a fixed list (um, uh, you know, basically…).
+  - Sentiment is not computed, since there is no reliable source for it.
+- **Uploads** are limited to 100 MB. The extracted speech audio sent to Whisper stays under its 25 MB limit.
+- **SQLite** suits a single-instance demo. Moving to Postgres would only mean changing `DATABASE_URL`.

@@ -262,3 +262,52 @@ MEETINGS = [
         },
     },
 ]
+
+# Sample soundbites / comments / bookmarks / completed tasks so every feature is visible on first
+# load. Times are "mm:ss" of real transcript lines above; a soundbite runs from `start` up to `end`.
+ANNOTATIONS = {
+    "Weekly Product Sync — Smart Notes Launch": {
+        "soundbites": [
+            {"title": "Beta survey: 4.3/5, timestamps top request", "start": "01:27", "end": "01:41"},
+            {"title": "Free tier gets 3 smart summaries a month", "start": "02:29", "end": "02:45"},
+        ],
+        "comments": [
+            {"at": "00:25", "body": "Let's revisit parallel chunking right after launch — long meetings are growing."},
+            {"at": "02:29", "body": "Finance signed off on the 3/month limit."},
+        ],
+        "bookmarks": [("important", "00:00"), ("action", "01:52"), ("positive", "01:27")],
+        "completed": ["Confirm the free-tier limit with finance"],
+    },
+    "Discovery Call — Brightwave Logistics": {
+        "soundbites": [
+            {"title": "Pain: 15–20 disputes a month with no call record", "start": "00:24", "end": "00:54"},
+            {"title": "Budget: up to $15k without CFO approval", "start": "02:23", "end": "02:32"},
+        ],
+        "comments": [
+            {"at": "01:42", "body": "Send the security pack before the IT call so they can pre-read."},
+            {"at": "02:38", "body": "Dispatch expansion = +120 seats. Flag to sales leadership."},
+        ],
+        "bookmarks": [("important", "02:23"), ("action", "02:04"), ("positive", "01:26"), ("negative", "00:24")],
+        "completed": ["Send the SOC 2 report and security whitepaper to Olivia"],
+    },
+    "Engineering Standup": {
+        "soundbites": [{"title": "Search slow on big accounts — try FTS5", "start": "00:21", "end": "00:43"}],
+        "comments": [{"at": "01:22", "body": "Agree — free-text assignees broke grouping in the beta."}],
+        "bookmarks": [("action", "00:35"), ("negative", "00:21")],
+    },
+    "Design Review — Meeting Detail Page": {
+        "soundbites": [{"title": "Why the player lives at the bottom", "start": "00:28", "end": "00:37"}],
+        "comments": [{"at": "01:17", "body": "The \"3 of 40\" match counter is shipped now."}],
+        "bookmarks": [("positive", "00:28"), ("action", "01:43")],
+    },
+    "Q4 Marketing Planning": {
+        "soundbites": [{"title": "Calendar-connected trials convert", "start": "00:32", "end": "00:42"}],
+        "comments": [{"at": "01:54", "body": "Can we move 5k from LinkedIn to webinars if pipeline lags?"}],
+        "bookmarks": [("important", "00:32"), ("action", "01:06")],
+    },
+    "Interview — Backend Engineer (Ravi Patel)": {
+        "soundbites": [{"title": "Candidate's search design answer", "start": "00:55", "end": "01:31"}],
+        "comments": [{"at": "01:15", "body": "Strong, pragmatic answer — Postgres first, OpenSearch later."}],
+        "bookmarks": [("positive", "01:36"), ("important", "01:57")],
+    },
+}

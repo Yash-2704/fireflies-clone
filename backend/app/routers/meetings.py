@@ -1,3 +1,4 @@
+import subprocess
 import uuid
 from datetime import datetime
 from pathlib import Path
@@ -22,7 +23,8 @@ from app.services.transcript_parser import ParsedSegment, TranscriptParseError, 
 router = APIRouter(prefix="/meetings", tags=["meetings"])
 
 MAX_TRANSCRIPT_BYTES = 2_000_000
-MAX_MEDIA_BYTES = 25_000_000  # Groq Whisper's per-file limit on the free tier
+MAX_MEDIA_BYTES = 100_000_000  # uploads; the audio sent to Whisper is extracted and much smaller
+WHISPER_MAX_BYTES = 25_000_000  # Groq Whisper's per-file limit on the free tier
 MEDIA_TYPES = {".mp3": "audio", ".m4a": "audio", ".wav": "audio", ".ogg": "audio",
                ".mp4": "video", ".webm": "video", ".mov": "video"}
 
@@ -67,6 +69,36 @@ def list_meetings(
     return MeetingList(meetings=meetings, total=len(meetings))
 
 
+async def _save_upload(file: UploadFile, dest: Path) -> None:
+    """Stream the upload to disk in chunks, enforcing the size limit without buffering it all."""
+    size = 0
+    with dest.open("wb") as out:
+        while chunk := await file.read(1 << 20):
+            size += len(chunk)
+            if size > MAX_MEDIA_BYTES:
+                raise HTTPException(413, f"Recordings must be {MAX_MEDIA_BYTES // 1_000_000} MB or smaller")
+            out.write(chunk)
+
+
+def _speech_audio(path: Path) -> tuple[str, bytes]:
+    """Extract compact mono speech audio for Whisper (a 1-hour meeting is ~14 MB at 32 kbps).
+    Videos and large files would otherwise exceed Whisper's 25 MB limit. Falls back to the
+    original file when ffmpeg isn't installed and the file is small enough."""
+    out = path.with_suffix(".speech.mp3")
+    try:
+        subprocess.run(["ffmpeg", "-nostdin", "-loglevel", "error", "-y", "-i", str(path), "-vn",
+                        "-ac", "1", "-ar", "16000", "-b:a", "32k", str(out)], check=True, timeout=600)
+        return out.name, out.read_bytes()
+    except FileNotFoundError:
+        if path.stat().st_size > WHISPER_MAX_BYTES:
+            raise HTTPException(413, "This server can't process files over 25 MB (ffmpeg is not installed)")
+        return path.name, path.read_bytes()
+    except subprocess.CalledProcessError:
+        raise HTTPException(422, "Couldn't read audio from this file — is it a valid recording?")
+    finally:
+        out.unlink(missing_ok=True)
+
+
 @router.post("", response_model=MeetingDetail, status_code=201)
 async def create_meeting(
     title: str = Form("", max_length=255),
@@ -82,18 +114,20 @@ async def create_meeting(
     file, or pasted transcript text — then generate AI notes."""
     filename = file.filename if file and file.filename else ""
     ext = Path(filename).suffix.lower()
-    media_name = media_type = None
+    media_name = media_type = media_duration = None
     if ext in MEDIA_TYPES:
-        raw = await file.read(MAX_MEDIA_BYTES + 1)
-        if len(raw) > MAX_MEDIA_BYTES:
-            raise HTTPException(413, "Recordings must be 25 MB or smaller")
+        media_name, media_type = f"{uuid.uuid4().hex}{ext}", MEDIA_TYPES[ext]
+        stored = MEDIA_DIR / media_name
         try:
-            lines, _ = await run_in_threadpool(ai.transcribe, filename, raw)
-        except ai.TranscriptionError as e:
+            await _save_upload(file, stored)
+            audio = await run_in_threadpool(_speech_audio, stored)
+            lines, media_duration = await run_in_threadpool(ai.transcribe, audio[0], audio[1])
+        except (HTTPException, ai.TranscriptionError) as e:
+            stored.unlink(missing_ok=True)
+            if isinstance(e, HTTPException):
+                raise
             raise HTTPException(422, str(e))
         parsed = [ParsedSegment("Speaker 1", l["text"], l["start"], l["end"]) for l in lines]
-        media_name, media_type = f"{uuid.uuid4().hex}{ext}", MEDIA_TYPES[ext]
-        (MEDIA_DIR / media_name).write_bytes(raw)
     else:
         if filename:
             raw = await file.read(MAX_TRANSCRIPT_BYTES + 1)
@@ -116,8 +150,12 @@ async def create_meeting(
     meeting.tags = tags_by_name(db, tags.split(","))
     db.add(meeting)
     load_transcript(db, meeting, parsed)
+    if media_duration:
+        meeting.duration_sec = round(media_duration)  # the recording's length, not the last line's end
     # Blocking LLM call: run off the event loop so other requests aren't stalled.
-    await run_in_threadpool(generate_notes, db, meeting)
+    notes = await run_in_threadpool(generate_notes, db, meeting)
+    if not title.strip() and filename and notes.get("title"):
+        meeting.title = notes["title"]  # file names like "AQOz9m…​.mp4" make poor titles
     db.commit()
     return to_detail(get_meeting(db, meeting.id, user))
 

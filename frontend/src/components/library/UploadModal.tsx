@@ -11,7 +11,7 @@ import { api } from "@/lib/api";
 const AUDIO = [".mp3", ".m4a", ".wav", ".ogg"];
 const VIDEO = [".mp4", ".webm", ".mov"];
 const TRANSCRIPT = [".txt", ".vtt", ".srt", ".json"];
-const LIMIT_MB = { media: 25, transcript: 2 };
+const LIMIT_MB = { media: 100, transcript: 2 };
 
 function kindOf(file: File): "audio" | "video" | "transcript" | null {
   const name = file.name.toLowerCase();
@@ -69,7 +69,7 @@ export function UploadModal({ onClose }: { onClose: () => void }) {
           className="flex w-full flex-col items-center gap-2 rounded-lg border border-dashed border-line bg-card px-4 py-10 text-center hover:border-primary">
           <FileUp size={24} className="text-emerald-400" />
           <span className="text-[14px] font-medium">Drop a file here, or click to browse</span>
-          <span className="text-xs text-muted">Audio or video: MP3, M4A, WAV, MP4, WEBM (max 25 MB)</span>
+          <span className="text-xs text-muted">Audio or video: MP3, M4A, WAV, MP4, WEBM (max 100 MB)</span>
           <span className="text-xs text-muted">Transcripts: TXT, VTT, SRT, JSON (max 2 MB)</span>
         </button>
       ) : (

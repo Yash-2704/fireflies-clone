@@ -5,13 +5,27 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 from app.db import MEDIA_DIR, Base, SessionLocal, engine
-from app.models import Meeting, TopicTracker, User
-from app.seed_data import MEETINGS
-from app.services.ai import normalize_notes
+from app.models import Bookmark, Comment, Meeting, Soundbite, TopicTracker, User
+from app.seed_data import ANNOTATIONS, MEETINGS
+from app.services.ai import _parse_stamp as to_sec, normalize_notes
 from app.services.meetings import apply_notes, load_transcript, participants_by_name, tags_by_name
 from app.services.transcript_parser import parse_transcript
 
 SEED_MEDIA = Path(__file__).resolve().parent / "seed_media"
+
+
+def add_annotations(db, meeting: Meeting, spec: dict) -> None:
+    """Attach sample soundbites/comments/bookmarks and mark some tasks done (see seed_data.ANNOTATIONS)."""
+    line_at = {round(s.start_sec): s for s in meeting.segments}  # a stamp that isn't a real line -> KeyError
+    for sb in spec.get("soundbites", []):
+        meeting.soundbites.append(Soundbite(title=sb["title"], start_sec=to_sec(sb["start"]), end_sec=to_sec(sb["end"])))
+    for c in spec.get("comments", []):
+        db.add(Comment(segment_id=line_at[round(to_sec(c["at"]))].id, body=c["body"]))
+    for kind, at in spec.get("bookmarks", []):
+        meeting.bookmarks.append(Bookmark(kind=kind, at_sec=to_sec(at)))
+    for item in meeting.action_items:
+        if item.text in spec.get("completed", []):
+            item.is_completed = True
 
 
 def seed() -> None:
@@ -35,6 +49,8 @@ def seed() -> None:
             db.add(meeting)
             load_transcript(db, meeting, parse_transcript(data["transcript"]))
             apply_notes(db, meeting, normalize_notes(data["notes"]), "seed")
+            db.flush()
+            add_annotations(db, meeting, ANNOTATIONS.get(data["title"], {}))
         # Default topic trackers so Topic Insights has something to show out of the box.
         for name, keywords in [("Pricing & budget", "pricing,price,budget,cost"),
                                ("Security", "security,soc 2,encryption,sso"),

@@ -13,7 +13,8 @@ export function MeetingMedia({ url, type, showVideo, onElement, onClick }: {
   if (type === "audio") return <audio ref={onElement} src={mediaSrc(url)} preload="metadata" className="hidden" />;
   return (
     <div className={showVideo ? "sticky top-0 z-10 bg-bg px-8 pt-6" : "hidden"}>
-      <video ref={onElement} src={mediaSrc(url)} preload="metadata" playsInline onClick={onClick}
+      {/* #t=0.1 makes the browser show a real first frame instead of black before playback. */}
+      <video ref={onElement} src={`${mediaSrc(url)}#t=0.1`} preload="metadata" playsInline onClick={onClick}
         className="mx-auto max-h-[38vh] w-full max-w-2xl rounded-lg bg-black" />
     </div>
   );

@@ -45,7 +45,7 @@ export function NotesPanel({ meeting, player, regenerating, onRegenerate, onActi
         </form>
       ) : (
         <h1 onClick={() => setRenaming(true)} title="Click to rename"
-          className="-mx-2 cursor-text rounded-md px-2 py-1 text-2xl font-semibold tracking-tight hover:bg-card">{meeting.title}</h1>
+          className="-mx-2 cursor-text break-words rounded-md px-2 py-1 text-2xl font-semibold tracking-tight hover:bg-card">{meeting.title}</h1>
       )}
       <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-muted">
         <span className="flex items-center gap-1.5"><Avatar name={meeting.organizer.name} size={18} square />{meeting.organizer.name}</span>

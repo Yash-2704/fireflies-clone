@@ -97,6 +97,7 @@ def transcribe(filename: str, data: bytes) -> tuple[list[dict], float]:
 NOTES_PROMPT = """You write meeting notes like Fireflies.ai. Given a transcript where each line is
 "[mm:ss] Speaker: text", return JSON with exactly these keys:
 {
+  "title": "short descriptive meeting title, at most 8 words",
   "overview": "3-5 sentence summary of the meeting's purpose, key discussion and outcomes",
   "chapters": [{"title": "short topic title", "summary": "1-2 sentences", "start": "mm:ss of the line where this topic starts"}],
   "action_items": [{"text": "imperative task", "assignee": "speaker name or null", "start": "mm:ss where it was said"}]
@@ -131,6 +132,7 @@ def _parse_stamp(value) -> float:
 
 def normalize_notes(data: dict) -> dict:
     return {
+        "title": str(data.get("title") or "").strip()[:120],
         "overview": str(data["overview"]).strip(),
         "chapters": [
             {"title": str(c["title"]).strip(), "summary": str(c.get("summary") or "").strip(),

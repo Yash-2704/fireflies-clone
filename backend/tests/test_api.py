@@ -18,6 +18,12 @@ def fresh_db():
     seed()
 
 
+def test_seed_has_sample_annotations():
+    m = c.get("/api/meetings/2").json()
+    assert m["soundbites"] and m["comments"] and m["bookmarks"]
+    assert any(a["is_completed"] for a in m["action_items"])
+
+
 def test_list_filter_sort():
     all_ = c.get("/api/meetings").json()["meetings"]
     assert len(all_) == 6
@@ -99,8 +105,8 @@ def test_annotations_lifecycle():
     mark = c.post("/api/meetings/1/bookmarks", json={"kind": "action", "at_sec": 12}).json()
     assert c.post("/api/meetings/1/bookmarks", json={"kind": "nope", "at_sec": 1}).status_code == 422
     m = c.get("/api/meetings/1").json()
-    assert [x["id"] for x in m["comments"]] == [comment["id"]]
-    assert m["soundbites"][0]["title"] == "Pricing" and m["bookmarks"][0]["kind"] == "action"
+    assert comment["id"] in [x["id"] for x in m["comments"]]  # seeds also include sample comments
+    assert "Pricing" in [x["title"] for x in m["soundbites"]] and mark["id"] in [x["id"] for x in m["bookmarks"]]
     edited = c.patch(f"/api/segments/{seg['id']}", json={"text": "  Fixed   text "}).json()
     assert edited["text"] == "Fixed text"
     for path in (f"/api/comments/{comment['id']}", f"/api/soundbites/{clip['id']}", f"/api/bookmarks/{mark['id']}"):

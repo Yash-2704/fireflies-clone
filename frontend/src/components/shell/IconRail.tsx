@@ -16,10 +16,10 @@ const GROUPS = [
   [
     { href: "/meetings", label: "Meetings", icon: Video },
     { href: "/tasks", label: "Tasks", icon: ListChecks },
-    { href: "/ai-skills", label: "AI Skills", icon: Sparkles },
+    { href: "/analytics", label: "Analytics", icon: BarChart3 },
   ],
   [
-    { href: "/analytics", label: "Analytics", icon: BarChart3 },
+    { href: "/ai-skills", label: "AI Skills", icon: Sparkles },
     { href: "/voice-agents", label: "Voice Agents", icon: Bot },
   ],
 ];

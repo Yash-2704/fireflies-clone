@@ -28,6 +28,8 @@ export function TranscriptPanel({ meeting, player, filter, onClearFilter, onRena
   const [query, setQuery] = useState("");
   const [matchIndex, setMatchIndex] = useState(0);
   const [following, setFollowing] = useState(true);
+  // The transcript line whose speaker label is being edited (per line, not per speaker —
+  // otherwise every line by that speaker would render its own auto-focused input).
   const [renaming, setRenaming] = useState<number | null>(null);
   const [editing, setEditing] = useState<number | null>(null);
   const [selection, setSelection] = useState<Selection>(null);
@@ -157,7 +159,7 @@ export function TranscriptPanel({ meeting, player, filter, onClearFilter, onRena
               {/* select-none: selecting across lines should capture only the spoken text */}
               <div className="mb-1 flex select-none items-center gap-2 text-[13px]">
                 <Avatar name={sp.name} size={20} square />
-                {renaming === sp.id ? (
+                {renaming === s.id ? (
                   <form onSubmit={async (e) => {
                     e.preventDefault();
                     const name = new FormData(e.currentTarget).get("name") as string;
@@ -168,7 +170,7 @@ export function TranscriptPanel({ meeting, player, filter, onClearFilter, onRena
                       className="input h-6 w-40 py-0" aria-label="Speaker name" />
                   </form>
                 ) : (
-                  <button onClick={() => setRenaming(sp.id)} title="Rename speaker" className="flex items-center gap-0.5 font-medium hover:underline">
+                  <button onClick={() => setRenaming(s.id)} title="Rename speaker" className="flex items-center gap-0.5 font-medium hover:underline">
                     {sp.name} <ChevronDown size={12} className="text-faint opacity-0 group-hover:opacity-100" />
                   </button>
                 )}

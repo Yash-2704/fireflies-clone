@@ -87,13 +87,14 @@ def load_transcript(db: Session, meeting: Meeting, parsed: list[ParsedSegment]) 
     meeting.duration_sec = int(max(p.end_sec for p in parsed))
 
 
-def generate_notes(db: Session, meeting: Meeting) -> None:
+def generate_notes(db: Session, meeting: Meeting) -> dict:
     """(Re)generate summary, chapters and extracted action items for a meeting.
-    Completed and manually-added action items (no start_sec) are kept."""
+    Completed and manually-added action items (no start_sec) are kept. Returns the notes."""
     names = {s.id: s.name for s in meeting.speakers}
     lines = [(s.start_sec, names[s.speaker_id], s.text) for s in meeting.segments]
     notes, source = ai.generate_notes(meeting.title, lines)
     apply_notes(db, meeting, notes, source)
+    return notes
 
 
 def apply_notes(db: Session, meeting: Meeting, notes: dict, source: str) -> None:
