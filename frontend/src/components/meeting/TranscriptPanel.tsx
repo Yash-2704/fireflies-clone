@@ -8,6 +8,7 @@ import { Player } from "@/components/meeting/usePlayer";
 import { Avatar } from "@/components/ui/Avatar";
 import { countMatches, Highlight } from "@/components/ui/Highlight";
 import { useToast } from "@/components/ui/Toast";
+import { copyAndNotify } from "@/lib/clipboard";
 import { BookmarkKind, MeetingDetail } from "@/lib/api";
 import { fmtTime } from "@/lib/format";
 
@@ -117,8 +118,7 @@ export function TranscriptPanel({ meeting, player, filter, onClearFilter, onRena
   }
 
   const copyMomentLink = (sec: number) =>
-    navigator.clipboard.writeText(`${location.origin}/meetings/${meeting.id}?t=${Math.floor(sec)}`)
-      .then(() => toast.success(`Link to ${fmtTime(sec)} copied`));
+    copyAndNotify(toast, `${location.origin}/meetings/${meeting.id}?t=${Math.floor(sec)}`, `Link to ${fmtTime(sec)} copied`);
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -150,6 +150,7 @@ export function TranscriptPanel({ meeting, player, filter, onClearFilter, onRena
           const sp = speakers.get(s.speaker_id)!;
           const active = s.id === activeId;
           const comments = commentCounts.get(s.id);
+          const clipped = meeting.soundbites.some((b) => s.start_sec < b.end_sec && s.end_sec > b.start_sec);
           return (
             <div key={s.id} data-seg={s.id} ref={(el) => { if (el) rows.current.set(s.id, el); else rows.current.delete(s.id); }}
               className={`group mb-1 rounded-lg px-2 py-2 transition-colors ${active ? "bg-primary-soft" : "hover:bg-card"}`}>
@@ -179,6 +180,7 @@ export function TranscriptPanel({ meeting, player, filter, onClearFilter, onRena
                   const { icon: Icon, color, label } = BOOKMARK_KINDS[k];
                   return <Icon key={i} size={12} style={{ color }} aria-label={label} />;
                 })}
+                {clipped && <Scissors size={12} className="text-primary" aria-label="Part of a soundbite" />}
                 {comments && <span className="flex items-center gap-0.5 text-xs text-muted"><MessageSquare size={11} />{comments}</span>}
                 <span className="ml-auto flex gap-1 opacity-0 group-hover:opacity-100">
                   <button onClick={() => copyMomentLink(s.start_sec)} title="Copy link to this moment" className="rounded p-1 text-faint hover:bg-hover hover:text-text">
@@ -248,7 +250,7 @@ export function TranscriptPanel({ meeting, player, filter, onClearFilter, onRena
                     className="rounded p-1.5 hover:bg-hover"><Icon size={13} style={{ color }} /></button>
                 );
               })}
-              <button onClick={() => navigator.clipboard.writeText(selection.text).then(() => { toast.success("Copied"); closeSelection(); })}
+              <button onClick={() => copyAndNotify(toast, selection.text, "Copied").then(closeSelection)}
                 title="Copy" className="rounded p-1.5 hover:bg-hover"><Copy size={13} /></button>
             </div>
           )}

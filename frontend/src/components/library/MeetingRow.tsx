@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { Avatar } from "@/components/ui/Avatar";
 import { useToast } from "@/components/ui/Toast";
+import { copyAndNotify } from "@/lib/clipboard";
 import { api, MeetingListItem } from "@/lib/api";
 import { exportNotesMarkdown } from "@/lib/export";
 import { fmtDateTime, fmtDuration } from "@/lib/format";
@@ -57,7 +58,7 @@ export function MeetingRow({ meeting, onEdit, onDelete }: {
           <div className="absolute right-0 top-9 z-30 w-40 rounded-lg border border-line bg-panel p-1 shadow-xl">
             <button onClick={() => {
               setMenu(false);
-              navigator.clipboard.writeText(`${location.origin}/meetings/${meeting.id}`).then(() => toast.success("Link copied"));
+              copyAndNotify(toast, `${location.origin}/meetings/${meeting.id}`, "Link copied");
             }} className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-[13px] hover:bg-hover">
               <Link2 size={13} /> Copy link
             </button>

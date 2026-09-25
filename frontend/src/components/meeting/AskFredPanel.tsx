@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { Player } from "@/components/meeting/usePlayer";
 import { useToast } from "@/components/ui/Toast";
+import { copyAndNotify } from "@/lib/clipboard";
 import { api, MeetingDetail } from "@/lib/api";
 import { toSeconds } from "@/lib/format";
 
@@ -109,7 +110,7 @@ export function AskFredChat({ ask, greeting, subtitle, suggestions, quickChips, 
               <div key={i}>
                 <div className="space-y-1"><Answer text={m.content} onSeek={onSeek} meetingIds={meetingIds} /></div>
                 <div className="mt-1.5 flex gap-1 text-faint">
-                  <button onClick={() => navigator.clipboard.writeText(m.content).then(() => toast.success("Answer copied"))}
+                  <button onClick={() => copyAndNotify(toast, m.content, "Answer copied")}
                     aria-label="Copy answer" className="rounded p-1 hover:bg-hover hover:text-text"><Copy size={13} /></button>
                   <button onClick={() => rate(i, "up")} aria-label="Helpful" aria-pressed={m.rating === "up"}
                     className={`rounded p-1 hover:bg-hover ${m.rating === "up" ? "text-emerald-400" : "hover:text-text"}`}><ThumbsUp size={13} /></button>

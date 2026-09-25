@@ -7,6 +7,7 @@ import { ActionItems } from "@/components/meeting/ActionItems";
 import { Player } from "@/components/meeting/usePlayer";
 import { Avatar } from "@/components/ui/Avatar";
 import { useToast } from "@/components/ui/Toast";
+import { copyAndNotify } from "@/lib/clipboard";
 import { ActionItem, MeetingDetail } from "@/lib/api";
 import { fmtDuration, fmtLongDate, fmtTime } from "@/lib/format";
 
@@ -26,7 +27,7 @@ export function NotesPanel({ meeting, player, regenerating, onRegenerate, onActi
 
   const copy = () => {
     const text = [summary?.overview, ...meeting.chapters.map((c) => `• ${c.title}: ${c.summary}`)].join("\n");
-    navigator.clipboard.writeText(text).then(() => toast.success("Notes copied"));
+    copyAndNotify(toast, text, "Notes copied");
   };
 
   return (

@@ -1,11 +1,13 @@
 "use client";
 
-import { MessageSquare, Play, Scissors, Trash2 } from "lucide-react";
+import { Link2, MessageSquare, Pause, Play, Scissors, Trash2 } from "lucide-react";
 import { useState } from "react";
 
 import { Annotations, BOOKMARK_KINDS } from "@/components/meeting/useAnnotations";
 import { Player } from "@/components/meeting/usePlayer";
 import { Avatar } from "@/components/ui/Avatar";
+import { useToast } from "@/components/ui/Toast";
+import { copyAndNotify } from "@/lib/clipboard";
 import { BookmarkKind, MeetingDetail, Segment } from "@/lib/api";
 import { fmtTime } from "@/lib/format";
 
@@ -36,24 +38,38 @@ const DeleteButton = ({ onClick, label }: { onClick: () => void; label: string }
 );
 
 export function SoundbitesPanel({ meeting, player, annotations }: { meeting: MeetingDetail; player: Player; annotations: Annotations }) {
+  const toast = useToast();
   if (!meeting.soundbites.length) {
     return <Empty icon={Scissors} title="No soundbites yet" hint="Select text in the transcript and choose “Create soundbite” to clip a moment." />;
   }
   return (
     <div className="space-y-2 p-3">
-      {meeting.soundbites.map((s) => (
-        <div key={s.id} className="group flex items-center gap-3 rounded-lg border border-line bg-card p-2.5">
-          <button onClick={() => player.playRange(s.start_sec, s.end_sec)} aria-label={`Play ${s.title}`}
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-primary-soft text-primary hover:bg-primary hover:text-white">
-            <Play size={14} fill="currentColor" />
-          </button>
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-[13px] font-medium">{s.title}</p>
-            <p className="text-xs text-muted">{fmtTime(s.start_sec)} – {fmtTime(s.end_sec)} · {Math.round(s.end_sec - s.start_sec)}s</p>
+      {meeting.soundbites.map((s) => {
+        const playing = player.playing && player.time >= s.start_sec && player.time < s.end_sec;
+        const progress = Math.min(100, Math.max(0, ((player.time - s.start_sec) / (s.end_sec - s.start_sec)) * 100));
+        return (
+          <div key={s.id} className={`group rounded-lg border bg-card p-2.5 ${playing ? "border-primary" : "border-line"}`}>
+            <div className="flex items-center gap-3">
+              <button onClick={() => (playing ? player.toggle() : player.playRange(s.start_sec, s.end_sec))}
+                aria-label={`${playing ? "Pause" : "Play"} ${s.title}`}
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-primary-soft text-primary hover:bg-primary hover:text-white">
+                {playing ? <Pause size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" />}
+              </button>
+              <div className="min-w-0 flex-1">
+                <p className="line-clamp-2 text-[13px] font-medium">{s.title}</p>
+                <p className="text-xs text-muted">{fmtTime(s.start_sec)} – {fmtTime(s.end_sec)} · {Math.round(s.end_sec - s.start_sec)}s{playing && " · Now playing"}</p>
+              </div>
+            </div>
+            {playing && <div className="mt-2 h-0.5 rounded bg-line"><div className="h-full rounded bg-primary" style={{ width: `${progress}%` }} /></div>}
+            <div className="mt-2 flex gap-1 text-xs opacity-0 group-hover:opacity-100 group-focus-within:opacity-100">
+              <button onClick={() => copyAndNotify(toast, `${location.origin}/meetings/${meeting.id}?t=${Math.floor(s.start_sec)}`, "Soundbite link copied")}
+                className="flex items-center gap-1 rounded px-1.5 py-0.5 text-muted hover:bg-hover hover:text-text"><Link2 size={12} /> Copy link</button>
+              <button onClick={() => annotations.deleteSoundbite(s.id)}
+                className="flex items-center gap-1 rounded px-1.5 py-0.5 text-muted hover:bg-hover hover:text-red-400"><Trash2 size={12} /> Delete</button>
+            </div>
           </div>
-          <DeleteButton onClick={() => annotations.deleteSoundbite(s.id)} label="Delete soundbite" />
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

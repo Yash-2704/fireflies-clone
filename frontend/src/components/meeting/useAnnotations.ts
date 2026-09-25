@@ -19,12 +19,15 @@ export type Annotations = ReturnType<typeof useAnnotations>;
 export function useAnnotations(meeting: MeetingDetail, setMeeting: (m: MeetingDetail) => void) {
   const toast = useToast();
 
+  /** Runs a mutation, merges the result into the meeting, toasts; resolves to whether it succeeded. */
   async function run(fn: () => Promise<Partial<MeetingDetail>>, ok: string) {
     try {
       setMeeting({ ...meeting, ...(await fn()) });
       toast.success(ok);
+      return true;
     } catch (e) {
       toast.error((e as Error).message);
+      return false;
     }
   }
 

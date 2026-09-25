@@ -1,7 +1,7 @@
 "use client";
 
 import {
-  BarChart3, Bot, Home, ListChecks, LogOut, Moon, Plug, Settings, Sparkles, Sun, UserPlus, Video, Zap,
+  BarChart3, Bot, Home, ListChecks, LogOut, Moon, Plug, Settings, Sparkles, Sun, UserPlus, Video,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -22,7 +22,6 @@ const GROUPS = [
     { href: "/analytics", label: "Analytics", icon: BarChart3 },
     { href: "/voice-agents", label: "Voice Agents", icon: Bot },
   ],
-  [{ href: "/upgrade", label: "Upgrade", icon: Zap }],
 ];
 
 const BOTTOM = [

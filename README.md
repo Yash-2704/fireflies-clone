@@ -67,7 +67,7 @@ fallback, and the UI labels them "Auto-generated (AI offline)".
 - **AskFred** — chat about a meeting (Groq), with clickable timestamp citations, copy and 👍/👎 on answers,
   and quick-ask chips. **Across meetings** too: on Home and in the library (scoped to the selected
   channel), answering from recent meetings' summaries and action items, with links to cited meetings.
-- **Soundbites, comments and bookmarks** — select transcript text to get a toolbar (Create soundbite ·
+- **Soundbites, comments and bookmarks** — the ✂ 💬 🔖 icons in the meeting page's left rail open each panel (an overlay on narrower screens; a "Highlights" tab on phones). Select transcript text to get a toolbar (Create soundbite ·
   Comment · Bookmark · Copy). Left mini-rail panels list soundbites (plays just that clip), comments
   (quoting their line) and typed bookmarks (Important / Action item / Positive / Negative, filterable).
   The player bar has one-click ☆ ☑ 👍 👎 bookmarks and timeline ticks.
@@ -79,7 +79,7 @@ fallback, and the UI labels them "Auto-generated (AI offline)".
 - **Export** — notes as Markdown, transcript as TXT (re-importable), or print/save as PDF.
 - **Dark theme by default** (like Fireflies), light theme in Settings. Toasts for every action.
 - Placeholders ("Coming soon"): live capture bot, integrations, team, analytics, AI skills,
-  voice agents, billing, and recording settings.
+  voice agents, and recording settings.
 
 ## Architecture
 
